@@ -38,7 +38,7 @@ func printSums(p *printer, daySums daySums) error {
 		return fmt.Errorf("write header newline: %w", err)
 	}
 
-	err = p.write("date", "hours", "goal", "diff")
+	err = p.write("date", "actual", "target", "diff")
 	if err != nil {
 		return fmt.Errorf("write header: %w", err)
 	}

@@ -38,13 +38,13 @@ func newPrinter(w io.Writer, cfg config) *printer {
 	}
 }
 
-func (p *printer) write(handle string, actual, goal, diff string) error {
+func (p *printer) write(handle string, actual, target, diff string) error {
 	_, err := fmt.Fprintf(
 		p.writer,
 		"%s\t%s\t%s\t%s\t\n",
 		handle,
 		actual,
-		goal,
+		target,
 		diff,
 	)
 	if err != nil {
@@ -54,13 +54,13 @@ func (p *printer) write(handle string, actual, goal, diff string) error {
 	return nil
 }
 
-func (p *printer) writeTime(handle string, actual, goal time.Duration) error {
-	diff := actual - goal
+func (p *printer) writeTime(handle string, actual, target time.Duration) error {
+	diff := actual - target
 
 	return p.write(
 		handle,
 		fmtDuration(actual),
-		fmtDuration(goal),
+		fmtDuration(target),
 		fmtDuration(diff),
 	)
 }
