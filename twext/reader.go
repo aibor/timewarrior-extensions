@@ -46,7 +46,7 @@ func (r *Reader) ReadConfig() (Config, error) {
 
 // ReadEntries reads the list of timewarrior entries.
 //
-// It returns [ErrParserConfigNotConsumed] if the configuration section of the
+// It returns [ErrReaderConfigNotConsumed] if the configuration section of the
 // input data has not been read yet. Call [Reader.ReadConfig] beforehand.
 func (r *Reader) ReadEntries() (Entries, error) {
 	if !r.configRead {

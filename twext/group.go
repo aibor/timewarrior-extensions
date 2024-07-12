@@ -20,7 +20,7 @@ type GroupValue interface {
 	any
 }
 
-// Groups is a map of any values grouped by a common [GroupKey.].
+// Groups is a map of any values grouped by a common [GroupKey].
 type Groups[K GroupKey, V any] map[K]V
 
 // Keys returns the sorted list of [GroupKey]s.
@@ -52,7 +52,7 @@ type GroupValueFunc[V GroupValue] func(result V, entry Entry) (newResult V)
 // depends on the return value of the given [GroupValueFunc].
 //
 // Skipping entries is possible by returning the input result unaltered in
-// the [GroupValuFunc].
+// the [GroupValueFunc].
 func Group[K GroupKey, V any](
 	entries Entries,
 	keyFn GroupKeyFunc[K],
