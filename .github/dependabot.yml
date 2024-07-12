@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2024 Tobias Böhm <code@aibor.de>
+#
+# SPDX-License-Identifier: MIT
+
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"

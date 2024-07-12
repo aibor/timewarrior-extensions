@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2024 Tobias Böhm <code@aibor.de>
+#
+# SPDX-License-Identifier: MIT
+
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - err113
+    - execinquery
+    - exhaustruct
+    - funlen
+    - gomnd
+    - paralleltest
+    - varnamelen
+
+issues:
+  exclude-use-default: false

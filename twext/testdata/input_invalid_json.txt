@@ -1,0 +1,8 @@
+color: on
+reports.day.axis: internal
+
+[
+{"id":3,"start":"20240630T102128Z","end":"20240630T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z"
+]

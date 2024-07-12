@@ -1,0 +1,3 @@
+color: on
+reports.day.axis: internal
+
