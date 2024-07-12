@@ -80,8 +80,10 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 		return fmt.Errorf("read config: %w", err)
 	}
 
+	log.SetPrefix("debug [flextime] - ")
+	log.SetFlags(0)
+
 	if cfg.debug {
-		log.SetPrefix("debug [flextime] - ")
 		log.SetOutput(errW)
 		log.Println("cfg - DailyTarget:", cfg.dailyTarget)
 		log.Println("cfg - Debug:", cfg.debug)
