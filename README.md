@@ -6,6 +6,10 @@ SPDX-License-Identifier: MIT
 
 # timewarrior-extensions
 
+[![PkgGoDev][pkg-go-dev-badge]][pkg-go-dev]
+[![Go Report Card][go-report-card-badge]][go-report-card]
+[![Actions][actions-test-badge]][actions-test]
+
 Collections of timewarrior-extensions and a golang library for parsing
 input from timewarrior extension API.
 
@@ -44,7 +48,14 @@ the daily/total target. `diff` is the difference between `actual` and `target`.
 
 ## Golang library
 
-The package `twext`  implements basic functions for reading input from
-timewarrior as [in their docs](https://timewarrior.net/docs/api/).
-All of the extensions in this repository are built based on the library.
-```
+The package [twext][pkg-go-dev] implements basic functions for reading input
+from timewarrior as described in 
+[their docs](https://timewarrior.net/docs/api/). All of the extensions in this
+repository are built based on the library.
+
+[pkg-go-dev]:           https://pkg.go.dev/github.com/aibor/timewarrior-extensions/twext
+[pkg-go-dev-badge]:     https://pkg.go.dev/badge/github.com/aibor/timewarrior-extensions/twext
+[go-report-card]:       https://goreportcard.com/report/github.com/aibor/timewarrior-extensions
+[go-report-card-badge]: https://goreportcard.com/badge/github.com/aibor/timewarrior-extensions
+[actions-test]:         https://github.com/aibor/timewarrior-extensions/actions/workflows/test.yaml
+[actions-test-badge]:   https://github.com/aibor/timewarrior-extensions/actions/workflows/test.yaml/badge.svg?branch=main
