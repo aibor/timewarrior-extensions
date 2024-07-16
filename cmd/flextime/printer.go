@@ -14,9 +14,16 @@ import (
 const minutesPerHour = 60
 
 func fmtDuration(d time.Duration) string {
+	var prefix string
+
+	if d < 0 {
+		prefix = "-"
+	}
+
 	return fmt.Sprintf(
-		"%d:%02d",
-		int64(d.Hours()),
+		"%s%dh:%02dm",
+		prefix,
+		int64(d.Abs().Hours()),
 		int64(d.Abs().Minutes())%minutesPerHour,
 	)
 }

@@ -36,8 +36,8 @@ flextime.hours_per_day: 4
 {"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"}
 ]`,
 			expectedStdout: `
-     date    actual    target     diff
-    total      1:59      8:00    -6:00
+     date    actual    target       diff
+    total    1h:59m    8h:00m    -6h:00m
 `,
 		},
 		{
@@ -50,10 +50,10 @@ flextime.hours_per_day: 4
 {"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"}
 ]`,
 			expectedStdout: `
-          date    actual    target      diff
-    2024-06-29      0:00      8:00     -7:59
-    2024-06-30      1:59      8:00     -6:00
-         total      1:59     16:00    -14:00
+          date    actual     target        diff
+    2024-06-29    0h:00m     8h:00m     -7h:59m
+    2024-06-30    1h:59m     8h:00m     -6h:00m
+         total    1h:59m    16h:00m    -14h:00m
 `,
 		},
 		{
@@ -64,8 +64,8 @@ flextime.hours_per_day: 4
 {"id":3,"start":"20240629T102128Z","end":"20240630T102131Z"}
 ]`,
 			expectedStdout: `
-     date    actual    target     diff
-    total      0:00      8:00    -8:00
+     date    actual    target       diff
+    total    0h:00m    8h:00m    -8h:00m
 `,
 			expectedStderr: `debug [flextime] - cfg - DailyTarget: 8h0m0s
 debug [flextime] - cfg - Debug: true
