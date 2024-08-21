@@ -29,15 +29,15 @@ type GroupValue interface {
 // Groups is a map of any values grouped by a common [GroupKey].
 type Groups[K GroupKey, V any] map[K]V
 
-// Keys returns the sorted list of [GroupKey]s.
-func (g Groups[K, V]) Keys() []K {
+// SortedKeys returns the sorted list of [GroupKey]s.
+func (g Groups[K, V]) SortedKeys() []K {
 	return slices.Sorted(maps.Keys(g))
 }
 
 // Sorted returns an iterator that iterates the [Groups] sorted by [GroupKey]s.
 func (g Groups[K, V]) Sorted() iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
-		for _, key := range g.Keys() {
+		for _, key := range g.SortedKeys() {
 			if !yield(key, g[key]) {
 				return
 			}
