@@ -44,14 +44,14 @@ func printSums(p *printer, daySums daySums) error {
 	}
 
 	var total time.Duration
-	for _, day := range daySums.Keys() {
-		total += daySums[day]
+	for day, daySum := range daySums.Sorted() {
+		total += daySum
 
 		if !p.cfg.verbose {
 			continue
 		}
 
-		err := p.writeTime(day, daySums[day], p.cfg.dailyTarget)
+		err := p.writeTime(day, daySum, p.cfg.dailyTarget)
 		if err != nil {
 			return fmt.Errorf("write day [%s]: %w", day, err)
 		}
