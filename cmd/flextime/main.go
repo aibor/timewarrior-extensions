@@ -18,7 +18,7 @@ import (
 
 type daySums = twext.Groups[string, time.Duration]
 
-func groupByStartDate(entry twext.Entry) string {
+func startDate(entry twext.Entry) string {
 	return entry.Start.Format(time.DateOnly)
 }
 
@@ -99,7 +99,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	return printSums(
 		newPrinter(outW, cfg),
-		twext.Group(entries, groupByStartDate, sumDuration),
+		twext.Group(entries, startDate, sumDuration),
 	)
 }
 
