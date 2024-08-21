@@ -6,6 +6,7 @@ package twext
 
 import (
 	"cmp"
+	"maps"
 	"slices"
 )
 
@@ -25,15 +26,7 @@ type Groups[K GroupKey, V any] map[K]V
 
 // Keys returns the sorted list of [GroupKey]s.
 func (g Groups[K, V]) Keys() []K {
-	keys := []K{}
-
-	for key := range g {
-		keys = append(keys, key)
-	}
-
-	slices.Sort(keys)
-
-	return keys
+	return slices.Sorted(maps.Keys(g))
 }
 
 // GroupKeyFunc returns the group key for the given entry.
