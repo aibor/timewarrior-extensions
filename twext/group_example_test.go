@@ -49,8 +49,8 @@ func ExampleGroup_slices() {
 		},
 	)
 
-	for _, day := range groups.Keys() {
-		fmt.Println(day, groups[day])
+	for day, group := range groups.Sorted() {
+		fmt.Println(day, group)
 	}
 	// Output:
 	// 2010-06-29 [3 2]
@@ -86,8 +86,8 @@ func ExampleGroup_reduce() {
 		},
 	)
 
-	for _, day := range groups.Keys() {
-		fmt.Println(day, groups[day])
+	for day, group := range groups.Sorted() {
+		fmt.Println(day, group)
 	}
 	// Output:
 	// 2010-06-29 9h0m0s
