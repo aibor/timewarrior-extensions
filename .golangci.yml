@@ -6,7 +6,6 @@ linters:
   enable-all: true
   disable:
     - depguard
-    - err113
     - execinquery
     - exhaustruct
     - exportloopref
