@@ -29,6 +29,7 @@ func TestRun(t *testing.T) {
 			name: "quiet",
 			input: `verbose: off
 flextime.hours_per_day: 4
+flextime.minutes_offset_total: 60
 
 [
 {"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
@@ -37,7 +38,7 @@ flextime.hours_per_day: 4
 ]`,
 			expectedStdout: `
      date    actual    target       diff
-    total    1h:59m    8h:00m    -6h:00m
+    total    2h:59m    8h:00m    -5h:00m
 `,
 		},
 		{
@@ -54,6 +55,42 @@ flextime.hours_per_day: 4
     2024-06-29    0h:00m     8h:00m     -7h:59m
     2024-06-30    1h:59m     8h:00m     -6h:00m
          total    1h:59m    16h:00m    -14h:00m
+`,
+		},
+		{
+			name: "positive offset",
+			input: `verbose: on
+flextime.minutes_offset_total: 90
+
+[
+{"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"}
+]`,
+			expectedStdout: `
+          date    actual     target        diff
+        offset    1h:30m     0h:00m      1h:30m
+    2024-06-29    0h:00m     8h:00m     -7h:59m
+    2024-06-30    1h:59m     8h:00m     -6h:00m
+         total    3h:29m    16h:00m    -12h:30m
+`,
+		},
+		{
+			name: "negative offset",
+			input: `verbose: on
+flextime.minutes_offset_total: -70
+
+[
+{"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"}
+]`,
+			expectedStdout: `
+          date     actual     target        diff
+        offset    -1h:10m     0h:00m     -1h:10m
+    2024-06-29     0h:00m     8h:00m     -7h:59m
+    2024-06-30     1h:59m     8h:00m     -6h:00m
+         total     0h:49m    16h:00m    -15h:10m
 `,
 		},
 		{
