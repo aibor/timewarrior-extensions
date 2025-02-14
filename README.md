@@ -21,6 +21,9 @@ Sums time spent per day and calculates the difference to the daily target. The
 default is 8 hours. It can be changed by setting the config variable
 `flextime.hours_per_day`.
 
+If you already have overtime, you can have flextime take it into account by
+setting the config variable `flextime.minutes_offset_total`.
+
 #### Install
 
 After cloning the repo, build directly into your timewarrior extensions

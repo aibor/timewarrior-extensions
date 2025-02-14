@@ -43,7 +43,15 @@ func printSums(p *printer, daySums daySums) error {
 		return fmt.Errorf("write header: %w", err)
 	}
 
-	var total time.Duration
+	total := p.cfg.offset
+
+	if p.cfg.offset != 0 && p.cfg.verbose {
+		err = p.writeTime("offset", p.cfg.offset, 0)
+		if err != nil {
+			return fmt.Errorf("write offset: %w", err)
+		}
+	}
+
 	for day, daySum := range daySums.Sorted() {
 		total += daySum
 
