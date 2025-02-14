@@ -25,15 +25,23 @@ flextime take it into account by setting a global offset.
 
 The following configuration keys are supported:
 
-| Key                     | Type     | Default | Description                                   |
-|-------------------------|----------|---------|-----------------------------------------------|
-| `flextime.time_per_day` | Duration | `8h`    | Daily time target.                            |
-| `flextime.offset_total` | Duration | `0`     | Time spent or lacking from a previous period. |
-| `verbose`               | Bool     | true    | Print daily sums.                             |
-| `debug`                 | Bool     | false   | Enable debug output.                          |
+| Key                             | Type     | Default           | Description                                   |
+|---------------------------------|----------|-------------------|-----------------------------------------------|
+| `flextime.time_per_day`         | Duration | `8h`              | Daily time target.                            |
+| `flextime.offset_total`         | Duration | `0`               | Time spent or lacking from a previous period. |
+| `flextime.aggregation_strategy` | Enum     | `single-day-only` | Strategy to use for aggregating the entries.  |
+| `verbose`                       | Bool     | true              | Print daily sums.                             |
+| `debug`                         | Bool     | false             | Enable debug output.                          |
 
 Durations must be given in a format supported by
 [go's time duration parser][go-time-duration].
+
+| Aggregation Strategy | Description                                                                |
+|----------------------|----------------------------------------------------------------------------|
+| `single-day-only`    | Discard entries spanning multiple days.                                    |
+| `into-start-date`    | Count entries spanning multiple days for the day that the entry starts on. |
+| `into-end-date`      | Count entries spanning multiple days for the day that the entry end on.    |
+| `split-at-midnight`  | Split entries spanning over multiple days at midnight.                     |
 
 #### Install
 
