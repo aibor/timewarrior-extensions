@@ -18,20 +18,6 @@ import (
 
 type daySums = twext.Groups[string, time.Duration]
 
-func startDate(entry twext.Entry) string {
-	return entry.Start.Format(time.DateOnly)
-}
-
-func sumDuration(result time.Duration, entry twext.Entry) time.Duration {
-	if !entry.End.IsZero() && !entry.Start.SameDate(&entry.End) {
-		log.Printf("entry %d spans multiple days. Skipping.", entry.ID)
-
-		return result
-	}
-
-	return result + entry.Duration()
-}
-
 //nolint:cyclop
 func printSums(p *printer, daySums daySums) error {
 	_, err := fmt.Fprintln(p.writer)
@@ -95,6 +81,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 	if cfg.debug {
 		log.SetOutput(errW)
 		log.Println("cfg - DailyTarget:", cfg.dailyTarget)
+		log.Println("cfg - AggregationStrategy:", cfg.aggregationStrategy)
 		log.Println("cfg - Debug:", cfg.debug)
 		log.Println("cfg - Verbose:", cfg.verbose)
 	} else {
@@ -108,7 +95,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	return printSums(
 		newPrinter(outW, cfg),
-		twext.Group(entries, startDate, sumDuration),
+		cfg.aggregationStrategy.Aggregate(entries),
 	)
 }
 

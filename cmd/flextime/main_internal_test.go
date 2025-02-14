@@ -26,6 +26,11 @@ func TestRun(t *testing.T) {
 			expectedErr: twext.ErrConfigEmpty,
 		},
 		{
+			name:        "invalid config aggregation strategy",
+			input:       "flextime.aggregation_strategy: broken",
+			expectedErr: errUnknownAggregationStrategy,
+		},
+		{
 			name: "quiet",
 			input: `verbose: off
 flextime.time_per_day: 4h
@@ -94,6 +99,64 @@ flextime.offset_total: -70m
 `,
 		},
 		{
+			name: "multi day to start",
+			input: `verbose: on
+flextime.aggregation_strategy: into-start-date
+
+[
+{"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"},
+{"id":1,"start":"20240701T225020Z","end":"20240702T010534Z"}
+]`,
+			expectedStdout: `
+          date    actual     target        diff
+    2024-06-29    0h:00m     8h:00m     -7h:59m
+    2024-06-30    1h:59m     8h:00m     -6h:00m
+    2024-07-01    2h:15m     8h:00m     -5h:44m
+         total    4h:14m    24h:00m    -19h:45m
+`,
+		},
+		{
+			name: "multi day to end",
+			input: `verbose: on
+flextime.aggregation_strategy: into-end-date
+
+[
+{"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"},
+{"id":1,"start":"20240701T225020Z","end":"20240702T010534Z"}
+]`,
+			expectedStdout: `
+          date    actual     target        diff
+    2024-06-29    0h:00m     8h:00m     -7h:59m
+    2024-06-30    1h:59m     8h:00m     -6h:00m
+    2024-07-02    2h:15m     8h:00m     -5h:44m
+         total    4h:14m    24h:00m    -19h:45m
+`,
+		},
+		{
+			name: "multi day split at midnight",
+			input: `verbose: on
+flextime.aggregation_strategy: split-at-midnight
+
+[
+{"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
+{"id":2,"start":"20240630T143940Z","end":"20240630T143943Z"},
+{"id":1,"start":"20240630T144010Z","end":"20240630T163943Z"},
+{"id":1,"start":"20240701T225020Z","end":"20240702T010534Z"}
+]`,
+			expectedStdout: `
+          date    actual     target        diff
+    2024-06-29    0h:00m     8h:00m     -7h:59m
+    2024-06-30    1h:59m     8h:00m     -6h:00m
+    2024-07-01    1h:09m     8h:00m     -6h:50m
+    2024-07-02    1h:05m     8h:00m     -6h:54m
+         total    4h:14m    32h:00m    -27h:45m
+`,
+		},
+		{
 			name: "debug",
 			input: `debug: on
 
@@ -101,10 +164,11 @@ flextime.offset_total: -70m
 {"id":3,"start":"20240629T102128Z","end":"20240630T102131Z"}
 ]`,
 			expectedStdout: `
-     date    actual    target       diff
-    total    0h:00m    8h:00m    -8h:00m
+     date    actual    target      diff
+    total    0h:00m    0h:00m    0h:00m
 `,
 			expectedStderr: `debug [flextime] - cfg - DailyTarget: 8h0m0s
+debug [flextime] - cfg - AggregationStrategy: single-day-only
 debug [flextime] - cfg - Debug: true
 debug [flextime] - cfg - Verbose: false
 debug [flextime] - entry 3 spans multiple days. Skipping.

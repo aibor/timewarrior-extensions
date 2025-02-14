@@ -65,3 +65,99 @@ func TestEntry_Duration(t *testing.T) {
 		})
 	}
 }
+
+func TestEntries_SplitAtMidnight(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    twext.Entries
+		expected twext.Entries
+	}{
+		{
+			name:     "empty",
+			input:    twext.Entries{},
+			expected: twext.Entries{},
+		},
+		{
+			name: "only single-day entries",
+			input: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T092755Z"),
+					End:   twext.MustParseTime(t, "20100204T163211Z"),
+				},
+			},
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T092755Z"),
+					End:   twext.MustParseTime(t, "20100204T163211Z"),
+				},
+			},
+		},
+		{
+			name: "multi-day entries",
+			input: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T000000Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100206T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100206T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100207T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("expected slice matches for "+tt.name, func(t *testing.T) {
+			actual := tt.input.SplitAtMidnight()
+			assert.Equal(t, tt.expected, actual)
+		})
+		t.Run("duration sum is equal for "+tt.name, func(t *testing.T) {
+			var expected, actual time.Duration
+			for _, entry := range tt.input {
+				expected += entry.Duration()
+			}
+
+			for _, splitEntry := range tt.input.SplitAtMidnight() {
+				actual += splitEntry.Duration()
+			}
+
+			assert.Equal(t, expected, actual)
+		})
+		t.Run("duration sum is equal for "+tt.name, func(t *testing.T) {
+			for _, entry := range tt.input.SplitAtMidnight() {
+				assert.LessOrEqual(t, entry.Duration(), 24*time.Hour)
+			}
+		})
+	}
+}
