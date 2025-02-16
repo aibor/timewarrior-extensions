@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -63,6 +64,18 @@ func (v ConfigValue) Int() (int, error) {
 	}
 
 	return i, nil
+}
+
+// Duration tries to parse the [ConfigValue] as [time.Duration]. It returns an
+// error if the string can not be parsed as [time.Duration]. See
+// [time.ParseDuration] for the supported format.
+func (v ConfigValue) Duration() (time.Duration, error) {
+	d, err := time.ParseDuration(v.String())
+	if err != nil {
+		return 0, fmt.Errorf("parse: %w", err)
+	}
+
+	return d, nil
 }
 
 // Config is a collection of configuration directives.

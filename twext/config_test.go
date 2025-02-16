@@ -6,6 +6,7 @@ package twext_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/aibor/timewarrior-extensions/twext"
 	"github.com/stretchr/testify/assert"
@@ -109,6 +110,50 @@ func TestConfigValueInt(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, tt.expectedInt, actualInt)
+		})
+	}
+}
+
+func TestConfigValueDuration(t *testing.T) {
+	tests := []struct {
+		input            twext.ConfigValue
+		expectedDuration time.Duration
+		invalid          bool
+	}{
+		{
+			input:            "5s",
+			expectedDuration: 5 * time.Second,
+		},
+		{
+			input:            "8h",
+			expectedDuration: 8 * time.Hour,
+		},
+		{
+			input:            "0",
+			expectedDuration: 0,
+		},
+		{
+			input:   "5",
+			invalid: true,
+		},
+		{
+			input:   "j",
+			invalid: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input.String(), func(t *testing.T) {
+			actualDuration, err := tt.input.Duration()
+
+			if tt.invalid {
+				require.Error(t, err)
+
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedDuration, actualDuration)
 		})
 	}
 }
