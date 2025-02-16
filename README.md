@@ -18,12 +18,22 @@ input from timewarrior extension API.
 ### flextime
 
 Sums time spent per day and calculates the difference to the daily target. The
-default is 8 hours. It can be changed by setting the config variable
-`flextime.time_per_day`. It takes a [go time duration string][go-time-duration].
+default is 8 hours. If you already have overtime (or undertime), you can have
+flextime take it into account by setting a global offset.
 
-If you already have overtime, you can have flextime take it into account by
-setting the config variable `flextime.offset_total`. It takes a
-[go time duration string][go-time-duration].
+#### Configuration
+
+The following configuration keys are supported:
+
+| Key                     | Type     | Default | Description                                   |
+|-------------------------|----------|---------|-----------------------------------------------|
+| `flextime.time_per_day` | Duration | `8h`    | Daily time target.                            |
+| `flextime.offset_total` | Duration | `0`     | Time spent or lacking from a previous period. |
+| `verbose`               | Bool     | true    | Print daily sums.                             |
+| `debug`                 | Bool     | false   | Enable debug output.                          |
+
+Durations must be given in a format supported by
+[go's time duration parser][go-time-duration].
 
 #### Install
 
