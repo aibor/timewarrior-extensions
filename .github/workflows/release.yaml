@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2025 Tobias Böhm <code@aibor.de>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    name: Release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # We need to do this because of:
+      # https://github.com/actions/checkout/issues/290 and its side-effects
+      # as https://github.com/goreleaser/goreleaser/issues/2919
+      - name: Fetch full annotated tags metadata
+        run: git fetch --force --tags
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
