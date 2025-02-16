@@ -32,12 +32,22 @@ func readConfig(reader *twext.Reader) (config, error) {
 		return config{}, fmt.Errorf("read config section: %w", err)
 	}
 
-	dailyTarget, err := configReadDuration(rawCfg, configKeyHoursPerDay, defaultDailyTarget, time.Hour)
+	dailyTarget, err := configReadDuration(
+		rawCfg,
+		configKeyHoursPerDay,
+		defaultDailyTarget,
+		time.Hour,
+	)
 	if err != nil {
 		return config{}, fmt.Errorf("get daily target: %w", err)
 	}
 
-	offset, err := configReadDuration(rawCfg, configKeyOffsetTotal, defaultOffsetTotal, time.Minute)
+	offset, err := configReadDuration(
+		rawCfg,
+		configKeyOffsetTotal,
+		defaultOffsetTotal,
+		time.Minute,
+	)
 	if err != nil {
 		return config{}, fmt.Errorf("get total offset: %w", err)
 	}
