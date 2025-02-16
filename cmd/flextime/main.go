@@ -32,6 +32,7 @@ func sumDuration(result time.Duration, entry twext.Entry) time.Duration {
 	return result + entry.Duration()
 }
 
+//nolint:cyclop
 func printSums(p *printer, daySums daySums) error {
 	_, err := fmt.Fprintln(p.writer)
 	if err != nil {
@@ -46,7 +47,7 @@ func printSums(p *printer, daySums daySums) error {
 	total := p.cfg.offset
 
 	if p.cfg.offset != 0 && p.cfg.verbose {
-		err = p.writeTime("offset", p.cfg.offset, 0)
+		err := p.writeTime("offset", p.cfg.offset, 0)
 		if err != nil {
 			return fmt.Errorf("write offset: %w", err)
 		}
