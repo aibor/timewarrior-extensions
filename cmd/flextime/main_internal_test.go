@@ -28,8 +28,8 @@ func TestRun(t *testing.T) {
 		{
 			name: "quiet",
 			input: `verbose: off
-flextime.hours_per_day: 4
-flextime.minutes_offset_total: 60
+flextime.time_per_day: 4h
+flextime.offset_total: 1h
 
 [
 {"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
@@ -60,7 +60,7 @@ flextime.minutes_offset_total: 60
 		{
 			name: "positive offset",
 			input: `verbose: on
-flextime.minutes_offset_total: 90
+flextime.offset_total: 90m
 
 [
 {"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},
@@ -78,7 +78,7 @@ flextime.minutes_offset_total: 90
 		{
 			name: "negative offset",
 			input: `verbose: on
-flextime.minutes_offset_total: -70
+flextime.offset_total: -70m
 
 [
 {"id":3,"start":"20240629T102128Z","end":"20240629T102131Z"},

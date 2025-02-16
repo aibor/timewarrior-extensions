@@ -19,10 +19,11 @@ input from timewarrior extension API.
 
 Sums time spent per day and calculates the difference to the daily target. The
 default is 8 hours. It can be changed by setting the config variable
-`flextime.hours_per_day`.
+`flextime.time_per_day`. It takes a [go time duration string][go-time-duration].
 
 If you already have overtime, you can have flextime take it into account by
-setting the config variable `flextime.minutes_offset_total`.
+setting the config variable `flextime.offset_total`. It takes a
+[go time duration string][go-time-duration].
 
 #### Install
 
@@ -62,3 +63,4 @@ repository are built based on the library.
 [go-report-card-badge]: https://goreportcard.com/badge/github.com/aibor/timewarrior-extensions
 [actions-test]:         https://github.com/aibor/timewarrior-extensions/actions/workflows/test.yaml
 [actions-test-badge]:   https://github.com/aibor/timewarrior-extensions/actions/workflows/test.yaml/badge.svg?branch=main
+[go-time-duration]:     https://pkg.go.dev/time#ParseDuration

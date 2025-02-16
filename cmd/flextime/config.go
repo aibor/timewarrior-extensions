@@ -13,10 +13,10 @@ import (
 
 const (
 	configKeyPrefix      = "flextime"
-	configKeyHoursPerDay = "hours_per_day"
-	defaultDailyTarget   = 8 * time.Hour
-	configKeyOffsetTotal = "minutes_offset_total"
-	defaultOffsetTotal   = 0
+	configKeyDailyTarget = "time_per_day"
+	defaultDailyTarget   = "8h"
+	configKeyOffsetTotal = "offset_total"
+	defaultOffsetTotal   = "0"
 )
 
 type config struct {
@@ -34,9 +34,8 @@ func readConfig(reader *twext.Reader) (config, error) {
 
 	dailyTarget, err := configReadDuration(
 		rawCfg,
-		configKeyHoursPerDay,
+		configKeyDailyTarget,
 		defaultDailyTarget,
-		time.Hour,
 	)
 	if err != nil {
 		return config{}, fmt.Errorf("get daily target: %w", err)
@@ -46,7 +45,6 @@ func readConfig(reader *twext.Reader) (config, error) {
 		rawCfg,
 		configKeyOffsetTotal,
 		defaultOffsetTotal,
-		time.Minute,
 	)
 	if err != nil {
 		return config{}, fmt.Errorf("get total offset: %w", err)
@@ -65,22 +63,19 @@ func readConfig(reader *twext.Reader) (config, error) {
 func configReadDuration(
 	twConfig twext.Config,
 	cfgKey string,
-	defValue time.Duration,
-	unit time.Duration,
+	defValue string,
 ) (time.Duration, error) {
 	key := twext.NewConfigKey(configKeyPrefix, cfgKey)
 
 	cfgValue, exists := twConfig[key]
 	if !exists {
-		return defValue, nil
+		cfgValue = twext.ConfigValue(defValue)
 	}
 
-	intValue, err := cfgValue.Int()
+	duration, err := cfgValue.Duration()
 	if err != nil {
-		return 0, fmt.Errorf("convert to int: %w", err)
+		return 0, fmt.Errorf("convert to duration: %w", err)
 	}
-
-	duration := time.Duration(intValue) * unit
 
 	return duration, nil
 }
