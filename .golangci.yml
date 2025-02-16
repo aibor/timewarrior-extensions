@@ -14,9 +14,9 @@ linters:
     - paralleltest
     - varnamelen
 
-  linters-settings:
-    lll:
-      line-length: 80
+linters-settings:
+  lll:
+    line-length: 80
 
 issues:
   exclude-use-default: false
