@@ -25,13 +25,14 @@ flextime take it into account by setting a global offset.
 
 The following configuration keys are supported:
 
-| Key                             | Type     | Default           | Description                                   |
-|---------------------------------|----------|-------------------|-----------------------------------------------|
-| `flextime.time_per_day`         | Duration | `8h`              | Daily time target.                            |
-| `flextime.offset_total`         | Duration | `0`               | Time spent or lacking from a previous period. |
-| `flextime.aggregation_strategy` | Enum     | `single-day-only` | Strategy to use for aggregating the entries.  |
-| `verbose`                       | Bool     | true              | Print daily sums.                             |
-| `debug`                         | Bool     | false             | Enable debug output.                          |
+| Key                               | Type     | Default                           | Description                                   |
+|-----------------------------------|----------|-----------------------------------|-----------------------------------------------|
+| `flextime.time_per_day`           | Duration | `8h`                              | Default daily time target.                    |
+| `flextime.time_per_day.<weekday>` | Duration | value of `flextime.time_per_day`  | Weekday specific time target.                 |
+| `flextime.offset_total`           | Duration | `0`                               | Time spent or lacking from a previous period. |
+| `flextime.aggregation_strategy`   | Enum     | `single-day-only`                 | Strategy to use for aggregating the entries.  |
+| `verbose`                         | Bool     | true                              | Print daily sums.                             |
+| `debug`                           | Bool     | false                             | Enable debug output.                          |
 
 Durations must be given in a format supported by
 [go's time duration parser][go-time-duration].
