@@ -76,6 +76,7 @@ func readConfig(reader *twext.Reader) (config, error) {
 	return cfg, nil
 }
 
+//nolint:ireturn,nolintlint
 func configRead[R any](
 	twConfig twext.Config,
 	cfgKey string,
