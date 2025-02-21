@@ -94,6 +94,43 @@ flextime.offset_total: -70m
 `,
 		},
 		{
+			name: "no work on weekends",
+			input: `verbose: on
+flextime.time_per_saturday: 0m
+flextime.time_per_sunday: 0m
+
+[
+{"id":4,"start":"20250220T082128Z","end":"20250220T123031Z"},
+{"id":3,"start":"20250220T130204Z","end":"20250220T181716Z"},
+{"id":2,"start":"20250221T143940Z","end":"20250221T173943Z"},
+{"id":1,"start":"20250222T091011Z","end":"20250222T135142Z"}
+]`,
+			expectedStdout: `
+          date     actual     target       diff
+    2025-02-20     9h:24m     8h:00m     1h:24m
+    2025-02-21     3h:00m     8h:00m    -4h:59m
+    2025-02-22     4h:41m     0h:00m     4h:41m
+         total    17h:05m    16h:00m     1h:05m
+`,
+		},
+		{
+			name: "less work on Friday",
+			input: `verbose: on
+flextime.time_per_friday: 4h
+
+[
+{"id":3,"start":"20250220T082128Z","end":"20250220T123031Z"},
+{"id":2,"start":"20250220T130204Z","end":"20250220T181716Z"},
+{"id":1,"start":"20250221T143940Z","end":"20250221T173943Z"}
+]`,
+			expectedStdout: `
+          date     actual     target       diff
+    2025-02-20     9h:24m     8h:00m     1h:24m
+    2025-02-21     3h:00m     4h:00m    -0h:59m
+         total    12h:24m    12h:00m     0h:24m
+`,
+		},
+		{
 			name: "debug",
 			input: `debug: on
 
@@ -104,7 +141,13 @@ flextime.offset_total: -70m
      date    actual    target       diff
     total    0h:00m    8h:00m    -8h:00m
 `,
-			expectedStderr: `debug [flextime] - cfg - DailyTarget: 8h0m0s
+			expectedStderr: `debug [flextime] - cfg - Target - Monday: 8h0m0s
+debug [flextime] - cfg - Target - Tuesday: 8h0m0s
+debug [flextime] - cfg - Target - Wednesday: 8h0m0s
+debug [flextime] - cfg - Target - Thursday: 8h0m0s
+debug [flextime] - cfg - Target - Friday: 8h0m0s
+debug [flextime] - cfg - Target - Saturday: 8h0m0s
+debug [flextime] - cfg - Target - Sunday: 8h0m0s
 debug [flextime] - cfg - Debug: true
 debug [flextime] - cfg - Verbose: false
 debug [flextime] - entry 3 spans multiple days. Skipping.
