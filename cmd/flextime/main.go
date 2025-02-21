@@ -44,7 +44,8 @@ func printSums(p *printer, daySums daySums) error {
 		return fmt.Errorf("write header: %w", err)
 	}
 
-	total := p.cfg.offset
+	totalSum := p.cfg.offset
+	var totalTarget time.Duration
 
 	if p.cfg.offset != 0 && p.cfg.verbose {
 		err := p.writeTime("offset", p.cfg.offset, 0)
@@ -54,23 +55,32 @@ func printSums(p *printer, daySums daySums) error {
 	}
 
 	for day, daySum := range daySums.Sorted() {
-		total += daySum
+		date, err := time.Parse(time.DateOnly, day)
+		if err != nil {
+			return fmt.Errorf("parse date: %w", err)
+		}
+
+		dayTarget, err := p.cfg.target.targetFor(date.Weekday())
+		if err != nil {
+			return fmt.Errorf("get weekday target: %w", err)
+		}
+
+		totalSum += daySum
+		totalTarget += dayTarget
 
 		if !p.cfg.verbose {
 			continue
 		}
 
-		err := p.writeTime(day, daySum, p.cfg.dailyTarget)
+		err = p.writeTime(day, daySum, dayTarget)
 		if err != nil {
 			return fmt.Errorf("write day [%s]: %w", day, err)
 		}
 	}
 
-	totalTarget := time.Duration(len(daySums)) * p.cfg.dailyTarget
-
-	err = p.writeTime("total", total, totalTarget)
+	err = p.writeTime("total", totalSum, totalTarget)
 	if err != nil {
-		return fmt.Errorf("write total: %w", err)
+		return fmt.Errorf("write totalSum: %w", err)
 	}
 
 	err = p.writer.Flush()
@@ -94,7 +104,13 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	if cfg.debug {
 		log.SetOutput(errW)
-		log.Println("cfg - DailyTarget:", cfg.dailyTarget)
+		log.Println("cfg - Target - Monday:", cfg.target.monday)
+		log.Println("cfg - Target - Tuesday:", cfg.target.tuesday)
+		log.Println("cfg - Target - Wednesday:", cfg.target.wednesday)
+		log.Println("cfg - Target - Thursday:", cfg.target.thursday)
+		log.Println("cfg - Target - Friday:", cfg.target.friday)
+		log.Println("cfg - Target - Saturday:", cfg.target.saturday)
+		log.Println("cfg - Target - Sunday:", cfg.target.sunday)
 		log.Println("cfg - Debug:", cfg.debug)
 		log.Println("cfg - Verbose:", cfg.verbose)
 	} else {
