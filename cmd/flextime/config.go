@@ -6,23 +6,51 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aibor/timewarrior-extensions/twext"
 )
 
+const numberOfWeekdays = 7
+
 const (
 	configKeyPrefix              = "flextime"
-	configKeyDailyTarget         = "time_per_day"
-	defaultDailyTarget           = "8h"
+	configKeyTimeTarget          = "time_per_day"
+	defaultTimeTarget            = "8h"
 	configKeyOffsetTotal         = "offset_total"
 	defaultOffsetTotal           = "0"
 	configKeyAggregationStrategy = "aggregation_strategy"
 	defaultAggregationStrategy   = "single-day-only"
 )
 
+type timeTargets struct {
+	weekdays        map[time.Weekday]time.Duration
+	defaultDuration time.Duration
+}
+
+func (t timeTargets) targetFor(weekday time.Weekday) time.Duration {
+	target, exists := t.weekdays[weekday]
+	if exists {
+		return target
+	}
+
+	return t.defaultDuration
+}
+
+func (t timeTargets) String() string {
+	str := &strings.Builder{}
+	_, _ = fmt.Fprintf(str, "Default: %s", t.defaultDuration)
+
+	for day, duration := range t.weekdays {
+		_, _ = fmt.Fprintf(str, " %s: %s", day, duration)
+	}
+
+	return str.String()
+}
+
 type config struct {
-	dailyTarget         time.Duration
+	timeTargets         timeTargets
 	offset              time.Duration
 	aggregationStrategy *aggregationStrategy[string, time.Duration]
 	debug               bool
@@ -35,14 +63,9 @@ func readConfig(reader *twext.Reader) (config, error) {
 		return config{}, fmt.Errorf("read config section: %w", err)
 	}
 
-	dailyTarget, err := configRead(
-		rawCfg,
-		configKeyDailyTarget,
-		defaultDailyTarget,
-		parseDuration,
-	)
+	target, err := readTimeTargetConfig(rawCfg)
 	if err != nil {
-		return config{}, fmt.Errorf("get daily target: %w", err)
+		return config{}, fmt.Errorf("get time target: %w", err)
 	}
 
 	offset, err := configRead(
@@ -66,7 +89,7 @@ func readConfig(reader *twext.Reader) (config, error) {
 	}
 
 	cfg := config{
-		dailyTarget:         dailyTarget,
+		timeTargets:         target,
 		offset:              offset,
 		aggregationStrategy: strategy,
 		debug:               rawCfg[twext.ConfigKeyDebug].Bool(),
@@ -74,6 +97,41 @@ func readConfig(reader *twext.Reader) (config, error) {
 	}
 
 	return cfg, nil
+}
+
+func readTimeTargetConfig(twConfig twext.Config) (timeTargets, error) {
+	var err error
+
+	targets := timeTargets{
+		weekdays: make(map[time.Weekday]time.Duration, numberOfWeekdays),
+	}
+
+	targets.defaultDuration, err = configRead(
+		twConfig,
+		configKeyTimeTarget,
+		defaultTimeTarget,
+		parseDuration,
+	)
+	if err != nil {
+		return timeTargets{}, fmt.Errorf("get default target: %w", err)
+	}
+
+	for day := range time.Weekday(numberOfWeekdays) {
+		subKey := strings.ToLower(day.String())
+		key := twext.NewConfigKey(configKeyPrefix, configKeyTimeTarget, subKey)
+		cfgValue, exists := twConfig[key]
+
+		if !exists {
+			continue
+		}
+
+		targets.weekdays[day], err = parseDuration(cfgValue)
+		if err != nil {
+			return timeTargets{}, fmt.Errorf("get target for %s: %w", day, err)
+		}
+	}
+
+	return targets, nil
 }
 
 //nolint:ireturn,nolintlint
