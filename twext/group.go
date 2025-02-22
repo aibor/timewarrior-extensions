@@ -16,12 +16,6 @@ type GroupKey interface {
 	cmp.Ordered
 }
 
-// GroupValue defines the interface for types that can be used as [Groups]
-// values.
-type GroupValue interface {
-	any
-}
-
 // Groups is a map of any values grouped by a common [GroupKey].
 type Groups[K GroupKey, V any] map[K]V
 
@@ -48,7 +42,7 @@ type GroupKeyFunc[K GroupKey] func(Entry) K
 //
 // The returned "newResult" is used as input "result" for the next iteration.
 // The value can be a single scalar value or a slice.
-type GroupValueFunc[V GroupValue] func(result V, entry Entry) (newResult V)
+type GroupValueFunc[V any] func(result V, entry Entry) (newResult V)
 
 // Group aggregates entries into groups.
 //
