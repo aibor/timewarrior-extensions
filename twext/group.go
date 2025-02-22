@@ -4,10 +4,6 @@
 
 package twext
 
-// NOTE: Remove nolint hints once gci supports new iter package.
-// See https://github.com/daixiang0/gci/issues/209
-//
-//nolint:gci
 import (
 	"cmp"
 	"iter"
