@@ -7,7 +7,6 @@ name: Test
 on:
   push:
     branches: [ "**" ]
-    tags: [ "*" ]
   pull_request:
 
 jobs:
@@ -67,8 +66,21 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install go-junit-report
+        run: go install github.com/jstemmer/go-junit-report/v2@latest
+
       - name: Run go tests
-        run: go test -race -v -cover -covermode=atomic ./...
+        run: |
+          go test -race -v \
+            -cover -covermode=atomic ./... \
+            | go-junit-report -set-exit-code > junit-report.xml
+
+      - name: Upload test output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: junit-report.xml
 
   reuse-lint:
     name: FSFE REUSE Compliance Check
