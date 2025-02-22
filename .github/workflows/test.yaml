@@ -11,6 +11,30 @@ on:
   pull_request:
 
 jobs:
+  go-deps-check:
+    name: Go dependency check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Go mod tidy
+        run: go mod tidy && git diff --exit-code
+
+      - name: Go mod verify
+        run: go mod verify
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck -test ./...
+
   go-lint:
     name: Go lint
     runs-on: ubuntu-latest
@@ -62,6 +86,7 @@ jobs:
     name: Test Results
     needs:
     - go-lint
+    - go-deps-check
     - go-test
     - reuse-lint
     steps:
