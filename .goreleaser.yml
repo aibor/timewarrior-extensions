@@ -29,7 +29,7 @@ builds:
 
 archives:
   - name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
-    format: binary
+    formats: binary
 
 release:
   header: |
