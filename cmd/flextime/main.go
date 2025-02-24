@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/aibor/timewarrior-extensions/twext"
@@ -75,6 +76,15 @@ func printSums(p *printer, daySums daySums) error {
 	return nil
 }
 
+func version() string {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return ""
+	}
+
+	return buildInfo.Main.Version
+}
+
 func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 	reader := twext.NewReader(inR)
 
@@ -88,6 +98,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	if cfg.debug {
 		log.SetOutput(errW)
+		log.Println("version:", version())
 		log.Println("cfg - Offset:", cfg.offset)
 		log.Println("cfg - Target:", cfg.timeTargets)
 		log.Println("cfg - AggregationStrategy:", cfg.aggregationStrategy)
