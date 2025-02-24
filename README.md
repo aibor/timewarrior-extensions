@@ -44,6 +44,21 @@ Durations must be given in a format supported by
 | `into-end-date`      | Count entries spanning multiple days for the day that the entry end on.    |
 | `split-at-midnight`  | Split entries spanning over multiple days at midnight.                     |
 
+##### Example
+
+This is an example configuration for a 35-hour week
+in which Fridays are a half workday and weekends off.
+Additionally, 3 hours and 23 minutes of pre-existing overtime are taken into account,
+and work is counted for the day it happened on.
+```
+flextime.time_per_day 7h30m
+flextime.time_per_day.friday 5h
+flextime.time_per_day.saturday 0h
+flextime.time_per_day.sunday 0h
+flextime.offset_total 3h23m
+flextime.aggregation_strategy split-at-midnight
+```
+
 #### Install
 
 After cloning the repo, build directly into your timewarrior extensions
