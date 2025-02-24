@@ -205,7 +205,8 @@ flextime.time_per_day.wednesday: 4h
      date    actual    target      diff
     total    0h:00m    0h:00m    0h:00m
 `,
-			expectedStderr: `debug [flextime] - cfg - Target: Default: 8h0m0s Wednesday: 4h0m0s
+			expectedStderr: `debug [flextime] - cfg - Offset: 0s
+debug [flextime] - cfg - Target: Default: 8h0m0s Wednesday: 4h0m0s
 debug [flextime] - cfg - AggregationStrategy: single-day-only
 debug [flextime] - cfg - Debug: true
 debug [flextime] - cfg - Verbose: false

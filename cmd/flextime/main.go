@@ -88,6 +88,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	if cfg.debug {
 		log.SetOutput(errW)
+		log.Println("cfg - Offset:", cfg.offset)
 		log.Println("cfg - Target:", cfg.timeTargets)
 		log.Println("cfg - AggregationStrategy:", cfg.aggregationStrategy)
 		log.Println("cfg - Debug:", cfg.debug)
