@@ -76,15 +76,23 @@ jobs:
       - name: Run go tests
         run: |
           go test -race -v \
-            -cover -covermode=atomic ./... \
+            -cover -covermode=atomic -coverprofile=coverage.txt \
+            ./... \
             | go-junit-report -set-exit-code > junit-report.xml
+
+      - name: Install go-cobertura
+        working-directory: .github/workflows
+        run: go install github.com/boumenot/gocover-cobertura
+
+      - name: Run go-cobertura
+        run: gocover-cobertura -by-files < coverage.txt > coverage.xml
 
       - name: Upload test output
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
-          path: junit-report.xml
+          path: "*.xml"
 
   reuse-lint:
     name: FSFE REUSE Compliance Check

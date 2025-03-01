@@ -16,12 +16,30 @@ permissions:
   checks: write
 
 jobs:
-  report:
+  test-report:
     runs-on: ubuntu-latest
     steps:
-    - uses: dorny/test-reporter@v1
+    - name: Report test results
+      uses: dorny/test-reporter@v1
       with:
         artifact: test-results
         name: Go Tests
         path: 'junit-report.xml'
         reporter: java-junit
+
+  coverage-report:
+    name: Coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          github-token: "${{ github.token }}"
+          run-id: "${{ github.event.workflow_run.id }}"
+
+      - name: Report coverage
+        uses: 5monkeys/cobertura-action@master
+        with:
+          path: coverage*.xml
+          minimum_coverage: 80
