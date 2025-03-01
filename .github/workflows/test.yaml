@@ -76,7 +76,10 @@ jobs:
       - name: Run go tests
         run: |
           go test -race -v \
-            -cover -covermode=atomic -coverprofile=coverage.txt \
+            -cover \
+            -covermode=atomic \
+            -coverprofile=coverage.txt \
+            -coverpkg="$(go list ./... | paste -s -d, -)" \
             ./... \
             | go-junit-report -set-exit-code > junit-report.xml
 
