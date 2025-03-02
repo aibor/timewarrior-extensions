@@ -73,7 +73,7 @@ func (e Entries) Filter(filter func(entry Entry) bool) Entries {
 
 	for _, entry := range e {
 		if filter(entry) {
-			entries = appendAsSingleDayEntries(entries, entry)
+			entries = append(entries, entry)
 		}
 	}
 
