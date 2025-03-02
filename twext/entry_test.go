@@ -161,3 +161,87 @@ func TestEntries_SplitAtMidnight(t *testing.T) {
 		})
 	}
 }
+
+func TestEntries_Filter(t *testing.T) {
+	tests := []struct {
+		name            string
+		entries         twext.Entries
+		filter          func(twext.Entry) bool
+		expectedEntries twext.Entries
+	}{
+		{
+			name: "all",
+			entries: twext.Entries{
+				{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				{
+					Start: twext.MustParseTime(t, "20100204T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+			},
+			filter: func(_ twext.Entry) bool {
+				return true
+			},
+			expectedEntries: twext.Entries{
+				{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				{
+					Start: twext.MustParseTime(t, "20100204T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+			},
+		},
+		{
+			name: "none",
+			entries: twext.Entries{
+				{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				{
+					Start: twext.MustParseTime(t, "20100204T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+			},
+			filter: func(_ twext.Entry) bool {
+				return false
+			},
+			expectedEntries: twext.Entries{},
+		},
+		{
+			name: "some",
+			entries: twext.Entries{
+				{
+					ID:    42,
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				{
+					Start: twext.MustParseTime(t, "20100204T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+			},
+			filter: func(e twext.Entry) bool {
+				return e.ID == 42
+			},
+			expectedEntries: twext.Entries{
+				{
+					ID:    42,
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualEntries := tt.entries.Filter(tt.filter)
+			assert.Equal(t, tt.expectedEntries, actualEntries)
+		})
+	}
+}
