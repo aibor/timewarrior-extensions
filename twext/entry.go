@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
+	"slices"
 	"time"
 )
 
@@ -67,17 +69,32 @@ func readEntries(reader io.Reader) (Entries, error) {
 	return entries, nil
 }
 
-// Filter removes entries that do not match the filter.
-func (e Entries) Filter(filter func(entry Entry) bool) Entries {
-	entries := make(Entries, 0, len(e))
+// All returns an [EntryIterator] over all entries.
+func (e Entries) All() EntryIterator {
+	return slices.Values(e)
+}
 
-	for _, entry := range e {
-		if filter(entry) {
-			entries = append(entries, entry)
+// EntryIterator is a single value iterator for [Entry]s.
+type EntryIterator = iter.Seq[Entry]
+
+// EntryFilter is a function that returns true for [Entry]s that pass the
+// filter and false for [Entry]s that should be ignored.
+type EntryFilter func(Entry) bool
+
+// Filter returns an [EntryIterator] for all [Entry]s that pass the
+// [EntryFilter].
+func (f EntryFilter) Filter(entries EntryIterator) EntryIterator {
+	return func(yield func(Entry) bool) {
+		for entry := range entries {
+			if !f(entry) {
+				continue
+			}
+
+			if !yield(entry) {
+				return
+			}
 		}
 	}
-
-	return entries
 }
 
 // SplitAtMidnight creates a list of single-day entries.
@@ -85,42 +102,51 @@ func (e Entries) Filter(filter func(entry Entry) bool) Entries {
 // The [Entry.ID] will be copied when an [Entry] is split, causing multiple
 // entries with the same ID to exist.
 // The covered sum of durations does not change.
-func (e Entries) SplitAtMidnight() Entries {
-	entries := make(Entries, 0, len(e))
-	for _, entry := range e {
-		entries = appendAsSingleDayEntries(entries, entry)
-	}
-
-	return entries
-}
-
-func appendAsSingleDayEntries(entries Entries, entry Entry) Entries {
-	end := entry.CurrentEnd()
-	for !entry.Start.SameDate(end) {
-		midnight := Time{Time: time.Date(
-			entry.Start.Year(),
-			entry.Start.Month(),
-			entry.Start.Day(),
-			0, 0, 0, 0,
-			entry.Start.Location(),
-		).AddDate(0, 0, 1)}
-
-		entries = append(entries, Entry{
-			ID:    entry.ID,
-			Start: entry.Start,
-			End:   midnight,
-			Tags:  entry.Tags,
-		})
-
-		entry = Entry{
-			ID:    entry.ID,
-			Start: midnight,
-			End:   entry.End,
-			Tags:  entry.Tags,
+func SplitAtMidnight(entries EntryIterator) EntryIterator {
+	return func(yield func(Entry) bool) {
+		for entry := range entries {
+			for e := range splitIntoSingleDayEntries(entry) {
+				if !yield(e) {
+					return
+				}
+			}
 		}
 	}
+}
 
-	entries = append(entries, entry)
+func splitIntoSingleDayEntries(entry Entry) EntryIterator {
+	return func(yield func(Entry) bool) {
+		end := entry.CurrentEnd()
+		for !entry.Start.SameDate(end) {
+			midnight := Time{Time: time.Date(
+				entry.Start.Year(),
+				entry.Start.Month(),
+				entry.Start.Day(),
+				0, 0, 0, 0,
+				entry.Start.Location(),
+			).AddDate(0, 0, 1)}
 
-	return entries
+			before := Entry{
+				ID:    entry.ID,
+				Start: entry.Start,
+				End:   midnight,
+				Tags:  entry.Tags,
+			}
+
+			if !yield(before) {
+				return
+			}
+
+			entry = Entry{
+				ID:    entry.ID,
+				Start: midnight,
+				End:   entry.End,
+				Tags:  entry.Tags,
+			}
+		}
+
+		if !yield(entry) {
+			return
+		}
+	}
 }

@@ -40,7 +40,7 @@ func ExampleGroup_slices() {
 	}
 
 	groups := twext.Group(
-		entries,
+		entries.All(),
 		func(entry twext.Entry) string {
 			return entry.Start.Format(time.DateOnly)
 		},
@@ -77,7 +77,7 @@ func ExampleGroup_reduce() {
 	}
 
 	groups := twext.Group(
-		entries,
+		entries.All(),
 		func(entry twext.Entry) string {
 			return entry.Start.Format(time.DateOnly)
 		},

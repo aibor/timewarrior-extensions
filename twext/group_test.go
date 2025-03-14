@@ -147,7 +147,7 @@ func TestGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := twext.Group(tt.entries, tt.keyFn, tt.valueFn)
+			actual := twext.Group(tt.entries.All(), tt.keyFn, tt.valueFn)
 			assert.Equal(t, tt.expectedGroups, actual)
 		})
 	}
@@ -190,9 +190,12 @@ func BenchmarkGroup(b *testing.B) {
 			for _, m := range []int{3, 4, 5, 6} {
 				n := int(math.Pow10(m))
 
-				entries := make(twext.Entries, n)
-				for i := range n {
-					entries[i].ID = i
+				entries := func(yield func(twext.Entry) bool) {
+					for i := range n {
+						if !yield(twext.Entry{ID: i}) {
+							return
+						}
+					}
 				}
 
 				expectedLen := n

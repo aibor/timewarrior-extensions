@@ -37,7 +37,7 @@ reports.day.axis: internal
 	}
 
 	groups := twext.Group(
-		entries,
+		entries.All(),
 		func(e twext.Entry) int {
 			return e.Start.Day()
 		},

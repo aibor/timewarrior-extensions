@@ -115,7 +115,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 
 	return printSums(
 		newPrinter(outW, cfg),
-		cfg.aggregationStrategy.Aggregate(entries),
+		cfg.aggregationStrategy.Aggregate(entries.All()),
 	)
 }
 

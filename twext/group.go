@@ -53,13 +53,13 @@ type GroupValueFunc[V any] func(result V, entry Entry) (newResult V)
 // Skipping entries is possible by returning the input result unaltered in
 // the [GroupValueFunc].
 func Group[K GroupKey, V any](
-	entries Entries,
+	entries EntryIterator,
 	keyFn GroupKeyFunc[K],
 	valueFn GroupValueFunc[V],
 ) Groups[K, V] {
 	groups := map[K]V{}
 
-	for _, entry := range entries {
+	for entry := range entries {
 		key := keyFn(entry)
 		groups[key] = valueFn(groups[key], entry)
 	}

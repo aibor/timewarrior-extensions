@@ -13,7 +13,7 @@ import (
 	"github.com/aibor/timewarrior-extensions/twext"
 )
 
-type entriesTransformation func(entries twext.Entries) twext.Entries
+type entriesTransformation func(entries twext.EntryIterator) twext.EntryIterator
 
 type aggregationStrategy[K twext.GroupKey, V any] struct {
 	name      string
@@ -27,13 +27,13 @@ func (s *aggregationStrategy[K, V]) String() string {
 }
 
 func (s *aggregationStrategy[K, V]) Aggregate(
-	entries twext.Entries,
+	entries twext.EntryIterator,
 ) twext.Groups[K, V] {
-	return twext.Group(
-		s.transform(entries),
-		s.keyFn,
-		s.valueFn,
-	)
+	if s.transform != nil {
+		entries = s.transform(entries)
+	}
+
+	return twext.Group(entries, s.keyFn, s.valueFn)
 }
 
 func startDate(entry twext.Entry) string {
@@ -65,35 +65,29 @@ func createAggregationStrategy(
 	switch strategy {
 	case "single-day-only":
 		return &aggregationStrategy[string, time.Duration]{
+			name:      strategy,
+			keyFn:     startDate,
+			valueFn:   sumDuration,
+			transform: twext.EntryFilter(onlySingleDays).Filter,
+		}, nil
+	case "into-start-date":
+		return &aggregationStrategy[string, time.Duration]{
 			name:    strategy,
 			keyFn:   startDate,
 			valueFn: sumDuration,
-			transform: func(entries twext.Entries) twext.Entries {
-				return entries.Filter(onlySingleDays)
-			},
 		}, nil
-	case "into-start-date":
+	case "into-end-date":
+		return &aggregationStrategy[string, time.Duration]{
+			name:    strategy,
+			keyFn:   endDate,
+			valueFn: sumDuration,
+		}, nil
+	case "split-at-midnight":
 		return &aggregationStrategy[string, time.Duration]{
 			name:      strategy,
 			keyFn:     startDate,
 			valueFn:   sumDuration,
-			transform: func(entries twext.Entries) twext.Entries { return entries },
-		}, nil
-	case "into-end-date":
-		return &aggregationStrategy[string, time.Duration]{
-			name:      strategy,
-			keyFn:     endDate,
-			valueFn:   sumDuration,
-			transform: func(entries twext.Entries) twext.Entries { return entries },
-		}, nil
-	case "split-at-midnight":
-		return &aggregationStrategy[string, time.Duration]{
-			name:    strategy,
-			keyFn:   startDate,
-			valueFn: sumDuration,
-			transform: func(entries twext.Entries) twext.Entries {
-				return entries.SplitAtMidnight()
-			},
+			transform: twext.SplitAtMidnight,
 		}, nil
 	default:
 		return nil, fmt.Errorf("%w: %s", errUnknownAggregationStrategy, strategy)
