@@ -5,6 +5,8 @@
 package twext_test
 
 import (
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/aibor/timewarrior-extensions/twext"
@@ -147,6 +149,68 @@ func TestGroup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := twext.Group(tt.entries, tt.keyFn, tt.valueFn)
 			assert.Equal(t, tt.expectedGroups, actual)
+		})
+	}
+}
+
+func BenchmarkGroup(b *testing.B) {
+	valueFn := func(_ int, _ twext.Entry) int {
+		return 0
+	}
+
+	benchs := []struct {
+		name              string
+		keyFn             twext.GroupKeyFunc[int]
+		expectedGroupsMax int
+	}{
+		{
+			name: "single group",
+			keyFn: func(_ twext.Entry) int {
+				return 0
+			},
+			expectedGroupsMax: 1,
+		},
+		{
+			name: "100 groups",
+			keyFn: func(e twext.Entry) int {
+				return e.ID % 100
+			},
+			expectedGroupsMax: 100,
+		},
+		{
+			name: "max groups",
+			keyFn: func(e twext.Entry) int {
+				return e.ID
+			},
+		},
+	}
+
+	for _, bench := range benchs {
+		b.Run(bench.name, func(b *testing.B) {
+			for _, m := range []int{3, 4, 5, 6} {
+				n := int(math.Pow10(m))
+
+				entries := make(twext.Entries, n)
+				for i := range n {
+					entries[i].ID = i
+				}
+
+				expectedLen := n
+				if bench.expectedGroupsMax > 0 && bench.expectedGroupsMax < n {
+					expectedLen = bench.expectedGroupsMax
+				}
+
+				b.Run(strconv.Itoa(n), func(b *testing.B) {
+					actualLen := 0
+
+					for b.Loop() {
+						groups := twext.Group(entries, bench.keyFn, valueFn)
+						actualLen = len(groups)
+					}
+
+					require.Equal(b, expectedLen, actualLen)
+				})
+			}
 		})
 	}
 }
