@@ -15,7 +15,7 @@ import (
 type Entry struct {
 	ID    int      `json:"id"`
 	Start Time     `json:"start"`
-	End   Time     `json:"end,omitempty"`
+	End   Time     `json:"end"`
 	Tags  []string `json:"tags,omitempty"`
 }
 
