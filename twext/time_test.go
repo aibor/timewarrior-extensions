@@ -65,6 +65,42 @@ func TestParseTime(t *testing.T) {
 	}
 }
 
+func TestMustParseTime(t *testing.T) {
+	validTime, err := time.Parse(time.RFC3339, "2010-02-01T12:34:56Z")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name         string
+		input        string
+		assert       assert.PanicAssertionFunc
+		expectedTime twext.Time
+	}{
+		{
+			name:   "wrong format",
+			input:  "2010-02-01T12:34:56Z",
+			assert: assert.Panics,
+		},
+		{
+			name:         "valid",
+			input:        "20100201T123456Z",
+			assert:       assert.NotPanics,
+			expectedTime: twext.Time{validTime},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var actual twext.Time
+
+			if tt.assert(t, func() {
+				actual = twext.MustParseTime(tt.input)
+			}) {
+				assert.Equal(t, tt.expectedTime, actual)
+			}
+		})
+	}
+}
+
 func TestTimeUnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -126,31 +162,31 @@ func TestTimeSameDate(t *testing.T) {
 	}{
 		{
 			name:        "same timestamp",
-			dateA:       twext.MustParseTime(t, "20240630T112233Z"),
-			dateB:       twext.MustParseTime(t, "20240630T112233Z"),
+			dateA:       twext.MustParseTime("20240630T112233Z"),
+			dateB:       twext.MustParseTime("20240630T112233Z"),
 			expectEqual: true,
 		},
 		{
 			name:        "same date",
-			dateA:       twext.MustParseTime(t, "20240630T112233Z"),
-			dateB:       twext.MustParseTime(t, "20240630T223344Z"),
+			dateA:       twext.MustParseTime("20240630T112233Z"),
+			dateB:       twext.MustParseTime("20240630T223344Z"),
 			expectEqual: true,
 		},
 		{
 			name:        "zero values",
-			dateA:       twext.MustParseTime(t, "00010101T000000Z"),
-			dateB:       twext.MustParseTime(t, "00010101T000000Z"),
+			dateA:       twext.MustParseTime("00010101T000000Z"),
+			dateB:       twext.MustParseTime("00010101T000000Z"),
 			expectEqual: true,
 		},
 		{
 			name:  "different date",
-			dateA: twext.MustParseTime(t, "20240630T112233Z"),
-			dateB: twext.MustParseTime(t, "20240629T112233Z"),
+			dateA: twext.MustParseTime("20240630T112233Z"),
+			dateB: twext.MustParseTime("20240629T112233Z"),
 		},
 		{
 			name:  "with zero",
-			dateA: twext.MustParseTime(t, "20240630T112233Z"),
-			dateB: twext.MustParseTime(t, "00010101T000000Z"),
+			dateA: twext.MustParseTime("20240630T112233Z"),
+			dateB: twext.MustParseTime("00010101T000000Z"),
 		},
 	}
 

@@ -106,17 +106,17 @@ func TestReader_Entries(t *testing.T) {
 			expected: []twext.Entry{
 				{
 					ID:    3,
-					Start: twext.MustParseTime(t, "20240630T102128Z"),
-					End:   twext.MustParseTime(t, "20240630T102131Z"),
+					Start: twext.MustParseTime("20240630T102128Z"),
+					End:   twext.MustParseTime("20240630T102131Z"),
 				},
 				{
 					ID:    2,
-					Start: twext.MustParseTime(t, "20240630T143940Z"),
-					End:   twext.MustParseTime(t, "20240630T143943Z"),
+					Start: twext.MustParseTime("20240630T143940Z"),
+					End:   twext.MustParseTime("20240630T143943Z"),
 				},
 				{
 					ID:    1,
-					Start: twext.MustParseTime(t, "20240630T144010Z"),
+					Start: twext.MustParseTime("20240630T144010Z"),
 				},
 			},
 		},

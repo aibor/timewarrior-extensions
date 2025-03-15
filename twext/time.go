@@ -27,6 +27,16 @@ func ParseTime(s string) (Time, error) {
 	return Time{t}, nil
 }
 
+// MustParseTime is like [ParseTime] but panics if an error occurs.
+func MustParseTime(s string) Time {
+	t, err := ParseTime(s)
+	if err != nil {
+		panic(fmt.Errorf("must parse time: %w", err))
+	}
+
+	return t
+}
+
 // UnmarshalJSON unmarshals timestamp strings from the timewarrior format.
 func (t *Time) UnmarshalJSON(data []byte) error {
 	if len(data) == 0 ||

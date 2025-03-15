@@ -31,16 +31,16 @@ func TestStartDate(t *testing.T) {
 		{
 			name: "single day",
 			input: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100203T102030Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100203T102030Z"),
 			},
 			expected: "2010-02-03",
 		},
 		{
 			name: "multi day",
 			input: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100204T031125Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100204T031125Z"),
 			},
 			expected: "2010-02-03",
 		},
@@ -62,16 +62,16 @@ func TestEndDate(t *testing.T) {
 		{
 			name: "single day",
 			input: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100203T102030Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100203T102030Z"),
 			},
 			expected: "2010-02-03",
 		},
 		{
 			name: "multi day",
 			input: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100204T031125Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100204T031125Z"),
 			},
 			expected: "2010-02-04",
 		},
@@ -94,8 +94,8 @@ func TestSumDuration(t *testing.T) {
 		{
 			name: "short duration initial",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100203T102030Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100203T102030Z"),
 			},
 			base:     0,
 			expected: 5 * time.Minute,
@@ -103,8 +103,8 @@ func TestSumDuration(t *testing.T) {
 		{
 			name: "short duration accumulates",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100203T102030Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100203T102030Z"),
 			},
 			base:     15 * time.Minute,
 			expected: 20 * time.Minute,
@@ -112,8 +112,8 @@ func TestSumDuration(t *testing.T) {
 		{
 			name: "cross-day duration initial",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T234530Z"),
-				End:   twext.MustParseTime(t, "20100204T001530Z"),
+				Start: twext.MustParseTime("20100203T234530Z"),
+				End:   twext.MustParseTime("20100204T001530Z"),
 			},
 			base:     0,
 			expected: 30 * time.Minute,
@@ -121,8 +121,8 @@ func TestSumDuration(t *testing.T) {
 		{
 			name: "cross-day duration initial",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T234530Z"),
-				End:   twext.MustParseTime(t, "20100204T001530Z"),
+				Start: twext.MustParseTime("20100203T234530Z"),
+				End:   twext.MustParseTime("20100204T001530Z"),
 			},
 			base:     30 * time.Minute,
 			expected: 1 * time.Hour,
@@ -146,16 +146,16 @@ func TestOnlySingleDays(t *testing.T) {
 		{
 			name: "single day",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T101530Z"),
-				End:   twext.MustParseTime(t, "20100203T102030Z"),
+				Start: twext.MustParseTime("20100203T101530Z"),
+				End:   twext.MustParseTime("20100203T102030Z"),
 			},
 			expected: true,
 		},
 		{
 			name: "multi day",
 			entry: twext.Entry{
-				Start: twext.MustParseTime(t, "20100203T234530Z"),
-				End:   twext.MustParseTime(t, "20100204T001530Z"),
+				Start: twext.MustParseTime("20100203T234530Z"),
+				End:   twext.MustParseTime("20100204T001530Z"),
 			},
 			expected: false,
 		},
@@ -182,22 +182,22 @@ func TestSplitIntoDaysAtMidnight(t *testing.T) {
 			name: "only single-day entries",
 			input: twext.Entries{
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100203T101530Z"),
-					End:   twext.MustParseTime(t, "20100203T142537Z"),
+					Start: twext.MustParseTime("20100203T101530Z"),
+					End:   twext.MustParseTime("20100203T142537Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100204T092755Z"),
-					End:   twext.MustParseTime(t, "20100204T163211Z"),
+					Start: twext.MustParseTime("20100204T092755Z"),
+					End:   twext.MustParseTime("20100204T163211Z"),
 				},
 			},
 			expected: twext.Entries{
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100203T101530Z"),
-					End:   twext.MustParseTime(t, "20100203T142537Z"),
+					Start: twext.MustParseTime("20100203T101530Z"),
+					End:   twext.MustParseTime("20100203T142537Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100204T092755Z"),
-					End:   twext.MustParseTime(t, "20100204T163211Z"),
+					Start: twext.MustParseTime("20100204T092755Z"),
+					End:   twext.MustParseTime("20100204T163211Z"),
 				},
 			},
 		},
@@ -205,34 +205,34 @@ func TestSplitIntoDaysAtMidnight(t *testing.T) {
 			name: "multi-day entries",
 			input: twext.Entries{
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100203T101530Z"),
-					End:   twext.MustParseTime(t, "20100204T142537Z"),
+					Start: twext.MustParseTime("20100203T101530Z"),
+					End:   twext.MustParseTime("20100204T142537Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100205T092755Z"),
-					End:   twext.MustParseTime(t, "20100207T163211Z"),
+					Start: twext.MustParseTime("20100205T092755Z"),
+					End:   twext.MustParseTime("20100207T163211Z"),
 				},
 			},
 			expected: twext.Entries{
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100203T101530Z"),
-					End:   twext.MustParseTime(t, "20100204T000000Z"),
+					Start: twext.MustParseTime("20100203T101530Z"),
+					End:   twext.MustParseTime("20100204T000000Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100204T000000Z"),
-					End:   twext.MustParseTime(t, "20100204T142537Z"),
+					Start: twext.MustParseTime("20100204T000000Z"),
+					End:   twext.MustParseTime("20100204T142537Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100205T092755Z"),
-					End:   twext.MustParseTime(t, "20100206T000000Z"),
+					Start: twext.MustParseTime("20100205T092755Z"),
+					End:   twext.MustParseTime("20100206T000000Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100206T000000Z"),
-					End:   twext.MustParseTime(t, "20100207T000000Z"),
+					Start: twext.MustParseTime("20100206T000000Z"),
+					End:   twext.MustParseTime("20100207T000000Z"),
 				},
 				twext.Entry{
-					Start: twext.MustParseTime(t, "20100207T000000Z"),
-					End:   twext.MustParseTime(t, "20100207T163211Z"),
+					Start: twext.MustParseTime("20100207T000000Z"),
+					End:   twext.MustParseTime("20100207T163211Z"),
 				},
 			},
 		},
