@@ -81,7 +81,7 @@ jobs:
             -coverprofile=coverage.txt \
             -coverpkg="$(go list ./... | paste -s -d, -)" \
             ./... \
-            | go-junit-report -set-exit-code > junit-report.xml
+            | go-junit-report -set-exit-code -iocopy -out junit-report.xml
 
       - name: Install go-cobertura
         working-directory: .github/workflows
