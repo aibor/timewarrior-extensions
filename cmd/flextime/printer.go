@@ -45,29 +45,36 @@ func newPrinter(w io.Writer, cfg config) *printer {
 	}
 }
 
-func (p *printer) write(handle string, actual, target, diff string) error {
-	_, err := fmt.Fprintf(
-		p.writer,
-		"%s\t%s\t%s\t%s\t\n",
-		handle,
-		actual,
-		target,
-		diff,
-	)
-	if err != nil {
-		return fmt.Errorf("fprintf: %w", err)
+func (p *printer) printf(format string, args ...any) {
+	if _, err := fmt.Fprintf(p.writer, format, args...); err != nil {
+		panic(fmt.Errorf("fprintf: %w", err))
 	}
-
-	return nil
 }
 
-func (p *printer) writeTime(handle string, actual, target time.Duration) error {
-	diff := actual - target
+func (p *printer) flush() {
+	if err := p.writer.Flush(); err != nil {
+		panic(fmt.Errorf("flush: %w", err))
+	}
+}
 
-	return p.write(
+func (p *printer) write(handle string, actual, target, diff string) {
+	p.printf("%s\t%s\t%s\t%s\t\n", handle, actual, target, diff)
+}
+
+func (p *printer) writeTime(handle string, actual, target time.Duration) {
+	p.write(
 		handle,
 		fmtDuration(actual),
 		fmtDuration(target),
-		fmtDuration(diff),
+		fmtDuration(actual-target),
 	)
+}
+
+func (p *printer) writeHeader() {
+	p.printf("\n")
+	p.write("date", "actual", "target", "diff")
+}
+
+func (p *printer) writeTotals(totalSum, totalTarget time.Duration) {
+	p.writeTime("total", totalSum, totalTarget)
 }

@@ -19,27 +19,25 @@ import (
 
 type daySums = twext.Groups[string, time.Duration]
 
-//nolint:cyclop
-func printSums(p *printer, daySums daySums) error {
-	_, err := fmt.Fprintln(p.writer)
-	if err != nil {
-		return fmt.Errorf("write header newline: %w", err)
-	}
+func printSums(p *printer, daySums daySums) (err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			var ok bool
+			if err, ok = rec.(error); !ok {
+				//nolint:err113
+				err = fmt.Errorf("non-error panic: %v", rec)
+			}
+		}
+	}()
 
-	err = p.write("date", "actual", "target", "diff")
-	if err != nil {
-		return fmt.Errorf("write header: %w", err)
-	}
-
-	totalSum := p.cfg.offset
+	p.writeHeader()
 
 	var totalTarget time.Duration
 
+	totalSum := p.cfg.offset
+
 	if p.cfg.offset != 0 && p.cfg.verbose {
-		err := p.writeTime("offset", p.cfg.offset, 0)
-		if err != nil {
-			return fmt.Errorf("write offset: %w", err)
-		}
+		p.writeTime("offset", p.cfg.offset, 0)
 	}
 
 	for day, daySum := range daySums.Sorted() {
@@ -57,23 +55,13 @@ func printSums(p *printer, daySums daySums) error {
 			continue
 		}
 
-		err = p.writeTime(day, daySum, dayTarget)
-		if err != nil {
-			return fmt.Errorf("write day [%s]: %w", day, err)
-		}
+		p.writeTime(day, daySum, dayTarget)
 	}
 
-	err = p.writeTime("total", totalSum, totalTarget)
-	if err != nil {
-		return fmt.Errorf("write totalSum: %w", err)
-	}
+	p.writeTotals(totalSum, totalTarget)
+	p.flush()
 
-	err = p.writer.Flush()
-	if err != nil {
-		return fmt.Errorf("flush: %w", err)
-	}
-
-	return nil
+	return err
 }
 
 func version() string {
@@ -113,10 +101,15 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 		return fmt.Errorf("read entries: %w", err)
 	}
 
-	return printSums(
+	err = printSums(
 		newPrinter(outW, cfg),
 		cfg.aggregationStrategy.Aggregate(entries.All()),
 	)
+	if err != nil {
+		return fmt.Errorf("print day sums: %w", err)
+	}
+
+	return nil
 }
 
 func main() {
