@@ -59,3 +59,14 @@ func (t *Time) SameDate(o *Time) bool {
 
 	return yt == yo && mt == mo && dt == do
 }
+
+// setClock creates a new [time.Time] by overiding the clock parts of the given
+// base time with the given clock time.
+func setClock(base time.Time, clock time.Time) time.Time {
+	year, month, day := base.Date()
+	hour, minute, second := clock.Clock()
+	nsec := clock.Nanosecond()
+	location := base.Location()
+
+	return time.Date(year, month, day, hour, minute, second, nsec, location)
+}

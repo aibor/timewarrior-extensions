@@ -51,6 +51,36 @@ func (e *Entry) IsActive() bool {
 	return e.End.IsZero()
 }
 
+// SplitIntoDays splits the entry in multiple entries, one per day, at the
+// given split time.
+//
+// It splits the [Entry] into days at the given clock [time.Time] of each day.
+// The date parts of that given split [time.Time] are ignored. To split at
+// midnight, just pass an empty value time.Time{}.
+func SplitIntoDays(entry Entry, splitClock time.Time) EntryIterator {
+	return func(yield func(Entry) bool) {
+		splitTime := setClock(entry.Start.Time, splitClock)
+		if entry.Start.Compare(splitTime) >= 0 {
+			splitTime = splitTime.AddDate(0, 0, 1)
+		}
+
+		for entry.CurrentEnd().Compare(splitTime) > 0 {
+			before := entry
+			before.End = Time{splitTime}
+			splitTime = splitTime.AddDate(0, 0, 1)
+			entry.Start = before.End
+
+			if !yield(before) {
+				return
+			}
+		}
+
+		if !yield(entry) {
+			return
+		}
+	}
+}
+
 // Entries is a list of [Entry]s.
 type Entries []Entry
 
@@ -105,48 +135,11 @@ func (f EntryFilter) Filter(entries EntryIterator) EntryIterator {
 func SplitAtMidnight(entries EntryIterator) EntryIterator {
 	return func(yield func(Entry) bool) {
 		for entry := range entries {
-			for e := range splitIntoSingleDayEntries(entry) {
+			for e := range SplitIntoDays(entry, time.Time{}) {
 				if !yield(e) {
 					return
 				}
 			}
-		}
-	}
-}
-
-func splitIntoSingleDayEntries(entry Entry) EntryIterator {
-	return func(yield func(Entry) bool) {
-		end := entry.CurrentEnd()
-		for !entry.Start.SameDate(end) {
-			midnight := Time{Time: time.Date(
-				entry.Start.Year(),
-				entry.Start.Month(),
-				entry.Start.Day(),
-				0, 0, 0, 0,
-				entry.Start.Location(),
-			).AddDate(0, 0, 1)}
-
-			before := Entry{
-				ID:    entry.ID,
-				Start: entry.Start,
-				End:   midnight,
-				Tags:  entry.Tags,
-			}
-
-			if !yield(before) {
-				return
-			}
-
-			entry = Entry{
-				ID:    entry.ID,
-				Start: midnight,
-				End:   entry.End,
-				Tags:  entry.Tags,
-			}
-		}
-
-		if !yield(entry) {
-			return
 		}
 	}
 }

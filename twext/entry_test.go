@@ -67,6 +67,145 @@ func TestEntry_Duration(t *testing.T) {
 	}
 }
 
+func TestEntry_SplitIntoDays(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    twext.Entry
+		split    time.Time
+		expected []twext.Entry
+	}{
+		{
+			name: "end before split time",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100203T101530Z"),
+				End:   twext.MustParseTime(t, "20100203T142537Z"),
+			},
+			split: time.Date(0, 0, 0, 15, 0, 0, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+		{
+			name: "end at split time",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100203T101530Z"),
+				End:   twext.MustParseTime(t, "20100203T142537Z"),
+			},
+			split: time.Date(0, 0, 0, 14, 25, 37, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+		{
+			name: "start after split time",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100203T101530Z"),
+				End:   twext.MustParseTime(t, "20100203T142537Z"),
+			},
+			split: time.Date(0, 0, 0, 15, 0, 0, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+		{
+			name: "start at split time",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100203T101530Z"),
+				End:   twext.MustParseTime(t, "20100203T142537Z"),
+			},
+			split: time.Date(0, 0, 0, 10, 15, 30, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+		{
+			name: "single-day split",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100203T101530Z"),
+				End:   twext.MustParseTime(t, "20100203T142537Z"),
+			},
+			split: time.Date(0, 0, 0, 13, 0, 0, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T130000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T130000Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+			},
+		},
+		{
+			name: "multi-day entries noon",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100205T092755Z"),
+				End:   twext.MustParseTime(t, "20100207T163211Z"),
+			},
+			split: time.Date(0, 0, 0, 12, 0, 0, 0, time.UTC),
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100205T120000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T120000Z"),
+					End:   twext.MustParseTime(t, "20100206T120000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100206T120000Z"),
+					End:   twext.MustParseTime(t, "20100207T120000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100207T120000Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+		},
+		{
+			name: "multi-day entries midnight",
+			input: twext.Entry{
+				Start: twext.MustParseTime(t, "20100205T092755Z"),
+				End:   twext.MustParseTime(t, "20100207T163211Z"),
+			},
+			split: time.Time{},
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100206T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100206T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100207T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := twext.SplitIntoDays(tt.input, tt.split)
+			assert.Equal(t, tt.expected, slices.Collect(actual))
+		})
+	}
+}
+
 func TestEntries_SplitAtMidnight(t *testing.T) {
 	tests := []struct {
 		name     string
