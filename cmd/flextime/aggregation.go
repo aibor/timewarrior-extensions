@@ -57,6 +57,18 @@ func onlySingleDays(entry twext.Entry) bool {
 	return sameDate
 }
 
+func splitIntoDaysAtMidnight(entries twext.EntryIterator) twext.EntryIterator {
+	return func(yield func(twext.Entry) bool) {
+		for entry := range entries {
+			for e := range twext.SplitIntoDays(entry, time.Time{}) {
+				if !yield(e) {
+					return
+				}
+			}
+		}
+	}
+}
+
 var errUnknownAggregationStrategy = errors.New("unknown aggregation strategy")
 
 func createAggregationStrategy(
@@ -87,7 +99,7 @@ func createAggregationStrategy(
 			name:      strategy,
 			keyFn:     startDate,
 			valueFn:   sumDuration,
-			transform: twext.SplitAtMidnight,
+			transform: splitIntoDaysAtMidnight,
 		}, nil
 	default:
 		return nil, fmt.Errorf("%w: %s", errUnknownAggregationStrategy, strategy)

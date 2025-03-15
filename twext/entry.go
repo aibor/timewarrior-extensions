@@ -126,20 +126,3 @@ func (f EntryFilter) Filter(entries EntryIterator) EntryIterator {
 		}
 	}
 }
-
-// SplitAtMidnight creates a list of single-day entries.
-//
-// The [Entry.ID] will be copied when an [Entry] is split, causing multiple
-// entries with the same ID to exist.
-// The covered sum of durations does not change.
-func SplitAtMidnight(entries EntryIterator) EntryIterator {
-	return func(yield func(Entry) bool) {
-		for entry := range entries {
-			for e := range SplitIntoDays(entry, time.Time{}) {
-				if !yield(e) {
-					return
-				}
-			}
-		}
-	}
-}

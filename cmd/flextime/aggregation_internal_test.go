@@ -5,6 +5,7 @@
 package main
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -15,10 +16,7 @@ import (
 func TestName(t *testing.T) {
 	name := "my-custom-strategy"
 	strategy := aggregationStrategy[string, int]{
-		name:      name,
-		keyFn:     nil,
-		valueFn:   nil,
-		transform: nil,
+		name: name,
 	}
 
 	assert.Equal(t, name, strategy.String())
@@ -166,6 +164,101 @@ func TestOnlySingleDays(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.expected, onlySingleDays(tt.entry))
+		})
+	}
+}
+
+func TestSplitIntoDaysAtMidnight(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    twext.Entries
+		expected []twext.Entry
+	}{
+		{
+			name:  "empty",
+			input: twext.Entries{},
+		},
+		{
+			name: "only single-day entries",
+			input: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T092755Z"),
+					End:   twext.MustParseTime(t, "20100204T163211Z"),
+				},
+			},
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100203T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T092755Z"),
+					End:   twext.MustParseTime(t, "20100204T163211Z"),
+				},
+			},
+		},
+		{
+			name: "multi-day entries",
+			input: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+			expected: twext.Entries{
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100203T101530Z"),
+					End:   twext.MustParseTime(t, "20100204T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100204T000000Z"),
+					End:   twext.MustParseTime(t, "20100204T142537Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100205T092755Z"),
+					End:   twext.MustParseTime(t, "20100206T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100206T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T000000Z"),
+				},
+				twext.Entry{
+					Start: twext.MustParseTime(t, "20100207T000000Z"),
+					End:   twext.MustParseTime(t, "20100207T163211Z"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sumDurations := func(e twext.EntryIterator) time.Duration {
+				var sum time.Duration
+				for entry := range e {
+					sum += entry.Duration()
+				}
+
+				return sum
+			}
+
+			entries := splitIntoDaysAtMidnight(tt.input.All())
+
+			assert.Equal(t, tt.expected, slices.Collect(entries),
+				"entries should be split correctly")
+
+			expectedTotal := sumDurations(tt.input.All())
+			actualTotal := sumDurations(entries)
+
+			assert.Equal(t, expectedTotal, actualTotal,
+				"total duration should be the same")
 		})
 	}
 }
