@@ -30,8 +30,7 @@ type timeTargets struct {
 }
 
 func (t timeTargets) targetFor(weekday time.Weekday) time.Duration {
-	target, exists := t.weekdays[weekday]
-	if exists {
+	if target, exists := t.weekdays[weekday]; exists {
 		return target
 	}
 

@@ -101,11 +101,10 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 		return fmt.Errorf("read entries: %w", err)
 	}
 
-	err = printSums(
-		newPrinter(outW, cfg),
-		cfg.aggregationStrategy.Aggregate(entries.All()),
-	)
-	if err != nil {
+	printer := newPrinter(outW, cfg)
+	daySums := cfg.aggregationStrategy.Aggregate(entries.All())
+
+	if err := printSums(printer, daySums); err != nil {
 		return fmt.Errorf("print day sums: %w", err)
 	}
 
@@ -113,8 +112,7 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 }
 
 func main() {
-	err := run(os.Stdin, os.Stdout, os.Stderr)
-	if err != nil {
+	if err := run(os.Stdin, os.Stdout, os.Stderr); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
