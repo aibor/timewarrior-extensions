@@ -1,19 +1,28 @@
-# SPDX-FileCopyrightText: 2024 Tobias Böhm <code@aibor.de>
+# SPDX-FileCopyrightText: 2025 Tobias Böhm <code@aibor.de>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+#
+version: "2"
 
 linters:
-  enable-all: true
+  default: all
   disable:
     - depguard
     - exhaustruct
     - funlen
     - paralleltest
     - varnamelen
+  settings:
+    lll:
+      line-length: 80
+  exclusions:
+    generated: strict
+    warn-unused: true
 
-linters-settings:
-  lll:
-    line-length: 80
-
-issues:
-  exclude-use-default: false
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
