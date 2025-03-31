@@ -101,7 +101,7 @@ func createAggregationStrategy(
 			valueFn:   sumDuration,
 			transform: splitIntoDaysAtMidnight,
 		}, nil
-	default:
-		return nil, fmt.Errorf("%w: %s", errUnknownAggregationStrategy, strategy)
 	}
+
+	return nil, fmt.Errorf("%w: %s", errUnknownAggregationStrategy, strategy)
 }

@@ -15,6 +15,7 @@ linters:
   settings:
     lll:
       line-length: 80
+      tab-width: 4
   exclusions:
     generated: strict
     warn-unused: true
@@ -26,3 +27,6 @@ formatters:
     - gofumpt
     - goimports
     - golines
+  settings:
+    golines:
+      max-len: 80
