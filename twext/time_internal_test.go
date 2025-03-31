@@ -12,6 +12,8 @@ import (
 )
 
 func TestSetClock(t *testing.T) {
+	testZone := time.FixedZone("test", -7)
+
 	tests := []struct {
 		name     string
 		base     time.Time
@@ -23,15 +25,15 @@ func TestSetClock(t *testing.T) {
 		},
 		{
 			name:     "midnight",
-			base:     time.Date(2015, 3, 1, 13, 4, 15, 0, time.Local),
+			base:     time.Date(2015, 3, 1, 13, 4, 15, 0, time.UTC),
 			clock:    time.Time{},
-			expected: time.Date(2015, 3, 1, 0, 0, 0, 0, time.Local),
+			expected: time.Date(2015, 3, 1, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			name:     "ignore clock date",
-			base:     time.Date(2015, 3, 1, 13, 4, 15, 0, time.Local),
-			clock:    time.Date(2016, 4, 2, 14, 8, 24, 6, time.UTC),
-			expected: time.Date(2015, 3, 1, 14, 8, 24, 6, time.Local),
+			base:     time.Date(2015, 3, 1, 13, 4, 15, 0, time.UTC),
+			clock:    time.Date(2016, 4, 2, 14, 8, 24, 6, testZone),
+			expected: time.Date(2015, 3, 1, 14, 8, 24, 6, time.UTC),
 		},
 	}
 
