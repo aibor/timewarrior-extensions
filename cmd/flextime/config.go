@@ -29,14 +29,6 @@ type timeTargets struct {
 	defaultDuration time.Duration
 }
 
-func (t timeTargets) targetFor(weekday time.Weekday) time.Duration {
-	if target, exists := t.weekdays[weekday]; exists {
-		return target
-	}
-
-	return t.defaultDuration
-}
-
 func (t timeTargets) String() string {
 	str := &strings.Builder{}
 	_, _ = fmt.Fprintf(str, "Default: %s", t.defaultDuration)
@@ -46,6 +38,14 @@ func (t timeTargets) String() string {
 	}
 
 	return str.String()
+}
+
+func (t timeTargets) targetFor(weekday time.Weekday) time.Duration {
+	if target, exists := t.weekdays[weekday]; exists {
+		return target
+	}
+
+	return t.defaultDuration
 }
 
 type config struct {
