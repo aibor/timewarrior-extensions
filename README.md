@@ -25,14 +25,15 @@ flextime take it into account by setting a global offset.
 
 The following configuration keys are supported:
 
-| Key                               | Type     | Default                           | Description                                   |
-|-----------------------------------|----------|-----------------------------------|-----------------------------------------------|
-| `flextime.time_per_day`           | Duration | `8h`                              | Default daily time target.                    |
-| `flextime.time_per_day.<weekday>` | Duration | value of `flextime.time_per_day`  | Weekday specific time target.                 |
-| `flextime.offset_total`           | Duration | `0`                               | Time spent or lacking from a previous period. |
-| `flextime.aggregation_strategy`   | Enum     | `single-day-only`                 | Strategy to use for aggregating the entries.  |
-| `verbose`                         | Bool     | true                              | Print daily sums.                             |
-| `debug`                           | Bool     | false                             | Enable debug output.                          |
+| Key                                 | Type     | Default                           | Description                                   |
+|-------------------------------------|----------|-----------------------------------|-----------------------------------------------|
+| `flextime.time_per_day`             | Duration | `8h`                              | Default daily time target.                    |
+| `flextime.time_per_day.<weekday>`   | Duration | value of `flextime.time_per_day`  | Weekday specific time target.                 |
+| `flextime.time_per_day.date.<date>` | Duration | value of `flextime.time_per_day`  | Date specific time target.                    |
+| `flextime.offset_total`             | Duration | `0`                               | Time spent or lacking from a previous period. |
+| `flextime.aggregation_strategy`     | Enum     | `single-day-only`                 | Strategy to use for aggregating the entries.  |
+| `verbose`                           | Bool     | true                              | Print daily sums.                             |
+| `debug`                             | Bool     | false                             | Enable debug output.                          |
 
 Durations must be given in a format supported by
 [go's time duration parser][go-time-duration].
@@ -48,6 +49,7 @@ Durations must be given in a format supported by
 
 This is an example configuration for a 35-hour week
 in which Fridays are a half workday and weekends off.
+The 31st of October 2025 is set to have 7h of worktime.
 Additionally, 3 hours and 23 minutes of pre-existing overtime are taken into account,
 and work is counted for the day it happened on.
 ```
@@ -55,6 +57,7 @@ flextime.time_per_day 7h30m
 flextime.time_per_day.friday 5h
 flextime.time_per_day.saturday 0h
 flextime.time_per_day.sunday 0h
+flextime.time_per_day.date.2025-10-31 7h
 flextime.offset_total 3h23m
 flextime.aggregation_strategy split-at-midnight
 ```

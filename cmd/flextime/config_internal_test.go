@@ -24,6 +24,7 @@ func TestReadTimeTargetConfig(t *testing.T) {
 			name:   "empty config",
 			config: twext.Config{},
 			expected: timeTargets{
+				dates:           map[time.Time]time.Duration{},
 				weekdays:        map[time.Weekday]time.Duration{},
 				defaultDuration: 8 * time.Hour,
 			},
@@ -34,6 +35,7 @@ func TestReadTimeTargetConfig(t *testing.T) {
 				"flextime.time_per_day": "7h",
 			},
 			expected: timeTargets{
+				dates:           map[time.Time]time.Duration{},
 				weekdays:        map[time.Weekday]time.Duration{},
 				defaultDuration: 7 * time.Hour,
 			},
@@ -57,6 +59,7 @@ func TestReadTimeTargetConfig(t *testing.T) {
 				"flextime.time_per_day.sunday":    "7h",
 			},
 			expected: timeTargets{
+				dates: map[time.Time]time.Duration{},
 				weekdays: map[time.Weekday]time.Duration{
 					time.Monday:    1 * time.Hour,
 					time.Tuesday:   2 * time.Hour,
@@ -76,6 +79,36 @@ func TestReadTimeTargetConfig(t *testing.T) {
 			},
 			errorMsg: "time: invalid duration",
 		},
+		{
+			name: "date-specific overrides",
+			config: twext.Config{
+				"flextime.time_per_day.date.2025-10-31": "1h",
+				"flextime.time_per_day.date.2025-11-01": "2h",
+			},
+			expected: timeTargets{
+				dates: map[time.Time]time.Duration{
+					time.Date(
+						2025, 10, 31,
+						0, 0, 0, 0,
+						time.UTC,
+					): 1 * time.Hour,
+					time.Date(
+						2025, 11, 1,
+						0, 0, 0, 0,
+						time.UTC,
+					): 2 * time.Hour,
+				},
+				weekdays:        map[time.Weekday]time.Duration{},
+				defaultDuration: 8 * time.Hour,
+			},
+		},
+		{
+			name: "invalid date overrides",
+			config: twext.Config{
+				"flextime.time_per_day.date.friday_the_24st_of_may_2024": "1h",
+			},
+			errorMsg: "get date for override",
+		},
 	}
 
 	for _, tt := range tests {
@@ -89,6 +122,150 @@ func TestReadTimeTargetConfig(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestTargetFor(t *testing.T) {
+	tests := []struct {
+		name     string
+		config   timeTargets
+		day      time.Time
+		expected time.Duration
+	}{
+		{
+			name: "just default",
+			config: timeTargets{
+				dates:           map[time.Time]time.Duration{},
+				weekdays:        map[time.Weekday]time.Duration{},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 8 * time.Hour,
+		},
+		{
+			name: "weekday specific",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{},
+				weekdays: map[time.Weekday]time.Duration{
+					time.Friday: 1 * time.Hour,
+				},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 1 * time.Hour,
+		},
+		{
+			name: "other weekday thus default",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{},
+				weekdays: map[time.Weekday]time.Duration{
+					time.Monday: 1 * time.Hour,
+				},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 8 * time.Hour,
+		},
+		{
+			name: "date specific",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{
+					time.Date(
+						2025, 10, 31,
+						0, 0, 0, 0,
+						time.UTC,
+					): 1 * time.Hour,
+				},
+				weekdays:        map[time.Weekday]time.Duration{},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 1 * time.Hour,
+		},
+		{
+			name: "other date thus default",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{
+					time.Date(
+						2025, 11, 1,
+						0, 0, 0, 0,
+						time.UTC,
+					): 1 * time.Hour,
+				},
+				weekdays:        map[time.Weekday]time.Duration{},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 8 * time.Hour,
+		},
+		{
+			name: "date specific but dirty request",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{
+					time.Date(
+						2025, 10, 31,
+						0, 0, 0, 0,
+						time.UTC,
+					): 1 * time.Hour,
+				},
+				weekdays:        map[time.Weekday]time.Duration{},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				19, 23, 18, 123503340,
+				time.FixedZone("ACWST", (8*60+45)*60),
+			),
+			expected: 1 * time.Hour,
+		},
+		{
+			name: "date specific has precedence over weekday specific",
+			config: timeTargets{
+				dates: map[time.Time]time.Duration{
+					time.Date(
+						2025, 10, 31,
+						0, 0, 0, 0,
+						time.UTC,
+					): 1 * time.Hour,
+				},
+				weekdays: map[time.Weekday]time.Duration{
+					time.Friday: 4 * time.Hour,
+				},
+				defaultDuration: 8 * time.Hour,
+			},
+			day: time.Date(
+				2025, 10, 31,
+				0, 0, 0, 0,
+				time.UTC,
+			),
+			expected: 1 * time.Hour,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.config.targetFor(tt.day))
 		})
 	}
 }
