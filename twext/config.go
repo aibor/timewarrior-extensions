@@ -19,7 +19,7 @@ const (
 	configKeySeparator = "."
 )
 
-// ConfigKey is an e complete config key string.
+// ConfigKey is any config key string.
 type ConfigKey string
 
 // Well known ConfigKeys.
@@ -36,6 +36,21 @@ func NewConfigKey(s ...string) ConfigKey {
 
 func (k ConfigKey) String() string {
 	return string(k)
+}
+
+// SubKey returns the sub-key below the given key prefix.
+// A key is always a prefix of itself.
+func (k ConfigKey) SubKey(prefix ConfigKey) (ConfigKey, bool) {
+	if prefix == k {
+		return "", true
+	}
+
+	subKey, found := strings.CutPrefix(
+		k.String(),
+		prefix.String()+configKeySeparator,
+	)
+
+	return ConfigKey(subKey), found
 }
 
 // ConfigValue is a config value string.
