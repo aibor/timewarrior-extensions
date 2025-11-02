@@ -46,13 +46,15 @@ func newPrinter(w io.Writer, cfg config) *printer {
 }
 
 func (p *printer) printf(format string, args ...any) {
-	if _, err := fmt.Fprintf(p.writer, format, args...); err != nil {
+	_, err := fmt.Fprintf(p.writer, format, args...)
+	if err != nil {
 		panic(fmt.Errorf("fprintf: %w", err))
 	}
 }
 
 func (p *printer) flush() {
-	if err := p.writer.Flush(); err != nil {
+	err := p.writer.Flush()
+	if err != nil {
 		panic(fmt.Errorf("flush: %w", err))
 	}
 }
