@@ -46,7 +46,7 @@ func printSums(p *printer, daySums daySums) (err error) {
 			return fmt.Errorf("parse date: %w", err)
 		}
 
-		dayTarget := p.cfg.timeTargets.targetFor(date.Weekday())
+		dayTarget := p.cfg.timeTargets.targetFor(date)
 
 		totalSum += daySum
 		totalTarget += dayTarget

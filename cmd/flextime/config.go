@@ -17,6 +17,7 @@ const numberOfWeekdays = 7
 const (
 	configKeyPrefix              = "flextime"
 	configKeyTimeTarget          = "time_per_day"
+	configSubKeyDateOverride     = "date"
 	defaultTimeTarget            = "8h"
 	configKeyOffsetTotal         = "offset_total"
 	defaultOffsetTotal           = "0"
@@ -25,6 +26,7 @@ const (
 )
 
 type timeTargets struct {
+	dates           map[time.Time]time.Duration
 	weekdays        map[time.Weekday]time.Duration
 	defaultDuration time.Duration
 }
@@ -40,8 +42,18 @@ func (t timeTargets) String() string {
 	return str.String()
 }
 
-func (t timeTargets) targetFor(weekday time.Weekday) time.Duration {
-	if target, exists := t.weekdays[weekday]; exists {
+func (t timeTargets) targetFor(day time.Time) time.Duration {
+	cleanDay := time.Date(
+		day.Year(), day.Month(), day.Day(),
+		0, 0, 0, 0,
+		time.UTC,
+	)
+
+	if override, exists := t.dates[cleanDay]; exists {
+		return override
+	}
+
+	if target, exists := t.weekdays[cleanDay.Weekday()]; exists {
 		return target
 	}
 
@@ -102,6 +114,7 @@ func readTimeTargetConfig(twConfig twext.Config) (timeTargets, error) {
 	var err error
 
 	targets := timeTargets{
+		dates:    make(map[time.Time]time.Duration),
 		weekdays: make(map[time.Weekday]time.Duration, numberOfWeekdays),
 	}
 
@@ -127,6 +140,28 @@ func readTimeTargetConfig(twConfig twext.Config) (timeTargets, error) {
 		targets.weekdays[day], err = parseDuration(cfgValue)
 		if err != nil {
 			return timeTargets{}, fmt.Errorf("get target for %s: %w", day, err)
+		}
+	}
+
+	overrideKey := twext.NewConfigKey(
+		configKeyPrefix,
+		configKeyTimeTarget,
+		configSubKeyDateOverride,
+	)
+	for key, override := range twConfig {
+		subKey, match := key.SubKey(overrideKey)
+		if !match {
+			continue
+		}
+
+		date, err := time.Parse(time.DateOnly, subKey.String())
+		if err != nil {
+			return timeTargets{}, fmt.Errorf("get date for override: %w", err)
+		}
+
+		targets.dates[date], err = parseDuration(override)
+		if err != nil {
+			return timeTargets{}, fmt.Errorf("get target for %s: %w", date, err)
 		}
 	}
 
