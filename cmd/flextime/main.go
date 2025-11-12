@@ -46,7 +46,7 @@ func printSums(p *printer, daySums daySums) (err error) {
 			return fmt.Errorf("parse date: %w", err)
 		}
 
-		dayTarget := p.cfg.timeTargets.targetFor(date.Weekday())
+		dayTarget := p.cfg.timeTargets.targetFor(date)
 
 		totalSum += daySum
 		totalTarget += dayTarget
@@ -104,7 +104,8 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 	printer := newPrinter(outW, cfg)
 	daySums := cfg.aggregationStrategy.Aggregate(entries.All())
 
-	if err := printSums(printer, daySums); err != nil {
+	err = printSums(printer, daySums)
+	if err != nil {
 		return fmt.Errorf("print day sums: %w", err)
 	}
 
@@ -112,7 +113,8 @@ func run(inR io.ReadSeeker, outW, errW io.Writer) error {
 }
 
 func main() {
-	if err := run(os.Stdin, os.Stdout, os.Stderr); err != nil {
+	err := run(os.Stdin, os.Stdout, os.Stderr)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

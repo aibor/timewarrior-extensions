@@ -194,6 +194,43 @@ flextime.time_per_day.friday: 4h
 `,
 		},
 		{
+			name: "more work 2025-02-21",
+			input: `verbose: on
+flextime.time_per_day.date.2025-02-21: 9h
+
+[
+{"id":3,"start":"20250220T082128Z","end":"20250220T123031Z"},
+{"id":2,"start":"20250220T130204Z","end":"20250220T181716Z"},
+{"id":1,"start":"20250221T143940Z","end":"20250221T173943Z"}
+]`,
+			expectedStdout: `
+          date     actual     target       diff
+    2025-02-20     9h:24m     8h:00m     1h:24m
+    2025-02-21     3h:00m     9h:00m    -5h:59m
+         total    12h:24m    17h:00m    -4h:35m
+`,
+		},
+		{
+			name: "more work on Friday 2025-02-28",
+			input: `verbose: on
+flextime.time_per_day.friday: 4h
+flextime.time_per_day.date.2025-02-28: 9h
+
+[
+{"id":4,"start":"20250220T082128Z","end":"20250220T123031Z"},
+{"id":3,"start":"20250220T130204Z","end":"20250220T181716Z"},
+{"id":2,"start":"20250221T143940Z","end":"20250221T173943Z"},
+{"id":1,"start":"20250228T095414Z","end":"20250228T165933Z"}
+]`,
+			expectedStdout: `
+          date     actual     target       diff
+    2025-02-20     9h:24m     8h:00m     1h:24m
+    2025-02-21     3h:00m     4h:00m    -0h:59m
+    2025-02-28     7h:05m     9h:00m    -1h:54m
+         total    19h:29m    21h:00m    -1h:30m
+`,
+		},
+		{
 			name: "debug",
 			input: `debug: on
 flextime.time_per_day.wednesday: 4h
