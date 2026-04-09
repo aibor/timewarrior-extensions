@@ -17,7 +17,7 @@ import (
 	"github.com/aibor/timewarrior-extensions/twext"
 )
 
-type daySums = twext.Groups[string, time.Duration]
+type daySums = twext.Aggregation[string, time.Duration]
 
 func printSums(p *printer, daySums daySums) (err error) {
 	defer func() {

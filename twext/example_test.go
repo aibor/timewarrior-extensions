@@ -36,7 +36,7 @@ reports.day.axis: internal
 		panic("cannot read entries: " + err.Error())
 	}
 
-	groups := twext.Group(
+	count := twext.Aggregate(
 		entries.All(),
 		func(e twext.Entry) int {
 			return e.Start.Day()
@@ -46,8 +46,8 @@ reports.day.axis: internal
 		},
 	)
 
-	fmt.Println("29:", groups[29])
-	fmt.Println("30:", groups[30])
+	fmt.Println("29:", count[29])
+	fmt.Println("30:", count[30])
 
 	// Output:
 	// color: on

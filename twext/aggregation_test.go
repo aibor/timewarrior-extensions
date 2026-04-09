@@ -14,45 +14,51 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGroups_SortedKeys(t *testing.T) {
+func TestAggregation_SortedKeys(t *testing.T) {
 	tests := []struct {
 		name         string
-		groups       twext.Groups[int, int]
+		aggregation  twext.Aggregation[int, int]
 		expectedKeys []int
 	}{
 		{
-			name:   "empty",
-			groups: twext.Groups[int, int]{},
+			name:        "empty",
+			aggregation: twext.Aggregation[int, int]{},
 		},
 		{
 			name:         "single",
-			groups:       twext.Groups[int, int]{1: 2},
+			aggregation:  twext.Aggregation[int, int]{1: 2},
 			expectedKeys: []int{1},
 		},
 		{
-			name:         "many",
-			groups:       twext.Groups[int, int]{1: 2, 3: 4, 5: 6, 7: 8, 9: 0},
+			name: "many",
+			aggregation: twext.Aggregation[int, int]{
+				1: 2,
+				3: 4,
+				5: 6,
+				7: 8,
+				9: 0,
+			},
 			expectedKeys: []int{1, 3, 5, 7, 9},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actualKeys := tt.groups.SortedKeys()
+			actualKeys := tt.aggregation.SortedKeys()
 			assert.Equal(t, tt.expectedKeys, actualKeys)
 		})
 	}
 }
 
-func TestGroups_Sorted(t *testing.T) {
+func TestAggregation_Sorted(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		groups := twext.Groups[int, int]{}
-		for range groups.Sorted() {
+		aggregation := twext.Aggregation[int, int]{}
+		for range aggregation.Sorted() {
 			require.Fail(t, "loop body should not be called")
 		}
 	})
 
-	groups := twext.Groups[int, int]{1: 2, 3: 4, 5: 6, 7: 8, 9: 0}
+	aggregation := twext.Aggregation[int, int]{1: 2, 3: 4, 5: 6, 7: 8, 9: 0}
 
 	type testVal struct{ i1, i2 int }
 
@@ -60,7 +66,7 @@ func TestGroups_Sorted(t *testing.T) {
 		expected := []testVal{{1, 2}}
 
 		actual := []testVal{}
-		for key, value := range groups.Sorted() {
+		for key, value := range aggregation.Sorted() {
 			actual = append(actual, testVal{key, value})
 
 			break
@@ -79,7 +85,7 @@ func TestGroups_Sorted(t *testing.T) {
 		}
 
 		actual := []testVal{}
-		for key, value := range groups.Sorted() {
+		for key, value := range aggregation.Sorted() {
 			actual = append(actual, testVal{key, value})
 		}
 
@@ -87,13 +93,13 @@ func TestGroups_Sorted(t *testing.T) {
 	})
 }
 
-func TestGroup(t *testing.T) {
+func TestAggregate(t *testing.T) {
 	tests := []struct {
-		name           string
-		entries        twext.Entries
-		keyFn          twext.GroupKeyFunc[int]
-		valueFn        twext.GroupValueFunc[int]
-		expectedGroups twext.Groups[int, int]
+		name     string
+		entries  twext.Entries
+		keyFn    twext.AggregationKeyFunc[int]
+		valueFn  twext.AggregationValueFunc[int]
+		expected twext.Aggregation[int, int]
 	}{
 		{
 			name:    "empty",
@@ -104,7 +110,7 @@ func TestGroup(t *testing.T) {
 			valueFn: func(_ int, _ twext.Entry) int {
 				return 2
 			},
-			expectedGroups: twext.Groups[int, int]{},
+			expected: twext.Aggregation[int, int]{},
 		},
 		{
 			name: "single",
@@ -117,7 +123,7 @@ func TestGroup(t *testing.T) {
 			valueFn: func(_ int, _ twext.Entry) int {
 				return 2
 			},
-			expectedGroups: twext.Groups[int, int]{
+			expected: twext.Aggregation[int, int]{
 				1: 2,
 			},
 		},
@@ -137,7 +143,7 @@ func TestGroup(t *testing.T) {
 			valueFn: func(r int, _ twext.Entry) int {
 				return r + 1
 			},
-			expectedGroups: twext.Groups[int, int]{
+			expected: twext.Aggregation[int, int]{
 				1: 3,
 				2: 1,
 				3: 2,
@@ -147,35 +153,35 @@ func TestGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := twext.Group(tt.entries.All(), tt.keyFn, tt.valueFn)
-			assert.Equal(t, tt.expectedGroups, actual)
+			actual := twext.Aggregate(tt.entries.All(), tt.keyFn, tt.valueFn)
+			assert.Equal(t, tt.expected, actual)
 		})
 	}
 }
 
-func BenchmarkGroup(b *testing.B) {
+func BenchmarkAggregate(b *testing.B) {
 	valueFn := func(_ int, _ twext.Entry) int {
 		return 0
 	}
 
 	benchs := []struct {
-		name              string
-		keyFn             twext.GroupKeyFunc[int]
-		expectedGroupsMax int
+		name        string
+		keyFn       twext.AggregationKeyFunc[int]
+		expectedMax int
 	}{
 		{
 			name: "single group",
 			keyFn: func(_ twext.Entry) int {
 				return 0
 			},
-			expectedGroupsMax: 1,
+			expectedMax: 1,
 		},
 		{
 			name: "100 groups",
 			keyFn: func(e twext.Entry) int {
 				return e.ID % 100
 			},
-			expectedGroupsMax: 100,
+			expectedMax: 100,
 		},
 		{
 			name: "max groups",
@@ -199,15 +205,15 @@ func BenchmarkGroup(b *testing.B) {
 				}
 
 				expectedLen := n
-				if bench.expectedGroupsMax > 0 && bench.expectedGroupsMax < n {
-					expectedLen = bench.expectedGroupsMax
+				if bench.expectedMax > 0 && bench.expectedMax < n {
+					expectedLen = bench.expectedMax
 				}
 
 				b.Run(strconv.Itoa(n), func(b *testing.B) {
 					actualLen := 0
 
 					for b.Loop() {
-						groups := twext.Group(entries, bench.keyFn, valueFn)
+						groups := twext.Aggregate(entries, bench.keyFn, valueFn)
 						actualLen = len(groups)
 					}
 

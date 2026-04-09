@@ -20,7 +20,7 @@ func parseTime(s string) twext.Time {
 	return t
 }
 
-func ExampleGroup_slices() {
+func ExampleAggregate_slices() {
 	entries := twext.Entries{
 		twext.Entry{
 			ID:    3,
@@ -39,7 +39,7 @@ func ExampleGroup_slices() {
 		},
 	}
 
-	groups := twext.Group(
+	groups := twext.Aggregate(
 		entries.All(),
 		func(entry twext.Entry) string {
 			return entry.Start.Format(time.DateOnly)
@@ -57,7 +57,7 @@ func ExampleGroup_slices() {
 	// 2010-06-30 [1]
 }
 
-func ExampleGroup_reduce() {
+func ExampleAggregate_reduce() {
 	entries := twext.Entries{
 		twext.Entry{
 			ID:    3,
@@ -76,7 +76,7 @@ func ExampleGroup_reduce() {
 		},
 	}
 
-	groups := twext.Group(
+	sum := twext.Aggregate(
 		entries.All(),
 		func(entry twext.Entry) string {
 			return entry.Start.Format(time.DateOnly)
@@ -86,7 +86,7 @@ func ExampleGroup_reduce() {
 		},
 	)
 
-	for day, group := range groups.Sorted() {
+	for day, group := range sum.Sorted() {
 		fmt.Println(day, group)
 	}
 	// Output:

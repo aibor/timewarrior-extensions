@@ -15,10 +15,10 @@ import (
 
 type entriesTransformation func(entries twext.EntryIterator) twext.EntryIterator
 
-type aggregationStrategy[K twext.GroupKey, V any] struct {
+type aggregationStrategy[K twext.AggregationKey, V any] struct {
 	name      string
-	keyFn     twext.GroupKeyFunc[K]
-	valueFn   twext.GroupValueFunc[V]
+	keyFn     twext.AggregationKeyFunc[K]
+	valueFn   twext.AggregationValueFunc[V]
 	transform entriesTransformation
 }
 
@@ -28,12 +28,12 @@ func (s *aggregationStrategy[K, V]) String() string {
 
 func (s *aggregationStrategy[K, V]) Aggregate(
 	entries twext.EntryIterator,
-) twext.Groups[K, V] {
+) twext.Aggregation[K, V] {
 	if s.transform != nil {
 		entries = s.transform(entries)
 	}
 
-	return twext.Group(entries, s.keyFn, s.valueFn)
+	return twext.Aggregate(entries, s.keyFn, s.valueFn)
 }
 
 func startDate(entry twext.Entry) string {
