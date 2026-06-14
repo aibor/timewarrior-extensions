@@ -4,7 +4,7 @@
 
 module github.com/aibor/timewarrior-extensions
 
-go 1.24
+go 1.26
 
 require github.com/stretchr/testify v1.11.1
 
